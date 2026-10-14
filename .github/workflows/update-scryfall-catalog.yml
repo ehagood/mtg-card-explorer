@@ -1,0 +1,44 @@
+name: Update Scryfall Catalog
+
+on:
+  workflow_dispatch:
+  # Optional automatic refresh every Sunday at 09:20 UTC.
+  schedule:
+    - cron: "20 9 * * 0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scryfall-catalog-update
+  cancel-in-progress: false
+
+jobs:
+  update-catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Download and build the Scryfall catalog
+        run: python scripts/update_scryfall_catalog.py
+
+      - name: Commit updated catalog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/scryfall/manifest.json data/scryfall/*.json.gz
+          if git diff --cached --quiet; then
+            echo "Catalog has no changes; nothing to commit."
+          else
+            git commit -m "Update Scryfall card catalog"
+            git push
+          fi
