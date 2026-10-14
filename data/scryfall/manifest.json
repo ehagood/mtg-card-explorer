@@ -1,4 +1,71 @@
 {
-  "status": "not_generated",
-  "message": "Run the Update Scryfall Catalog workflow to create this data."
+  "status": "ready",
+  "source": "Scryfall default_cards bulk data",
+  "updated_at": "2026-10-14T18:41:09Z",
+  "scryfall_updated_at": "2026-10-14T09:05:48.686+00:00",
+  "card_count": 118740,
+  "compressed_bytes": 12089310,
+  "shards": [
+    {
+      "file": "cards-A_C.json.gz",
+      "bucket": "A-C",
+      "count": 21407,
+      "bytes": 2213149
+    },
+    {
+      "file": "cards-D_F.json.gz",
+      "bucket": "D-F",
+      "count": 16844,
+      "bytes": 1683020
+    },
+    {
+      "file": "cards-G_I.json.gz",
+      "bucket": "G-I",
+      "count": 13620,
+      "bytes": 1382684
+    },
+    {
+      "file": "cards-J_L.json.gz",
+      "bucket": "J-L",
+      "count": 7950,
+      "bytes": 823511
+    },
+    {
+      "file": "cards-M_O.json.gz",
+      "bucket": "M-O",
+      "count": 12408,
+      "bytes": 1242954
+    },
+    {
+      "file": "cards-P_R.json.gz",
+      "bucket": "P-R",
+      "count": 12255,
+      "bytes": 1240583
+    },
+    {
+      "file": "cards-S_U.json.gz",
+      "bucket": "S-U",
+      "count": 25977,
+      "bytes": 2639983
+    },
+    {
+      "file": "cards-V_Z.json.gz",
+      "bucket": "V-Z",
+      "count": 8222,
+      "bytes": 855465
+    },
+    {
+      "file": "cards-0_9.json.gz",
+      "bucket": "0-9",
+      "count": 11,
+      "bytes": 1841
+    },
+    {
+      "file": "cards-other.json.gz",
+      "bucket": "other",
+      "count": 46,
+      "bytes": 6120
+    }
+  ],
+  "notes": "Default card dataset provides a representative card entry, not every set printing. Card images are hosted by Scryfall."
 }
