@@ -1,58 +1,58 @@
 {
   "status": "ready",
   "source": "Scryfall default_cards bulk data",
-  "updated_at": "2026-10-18T13:21:05Z",
-  "scryfall_updated_at": "2026-10-18T09:06:08.225+00:00",
-  "card_count": 118893,
-  "compressed_bytes": 12103761,
+  "updated_at": "2026-10-25T13:44:50Z",
+  "scryfall_updated_at": "2026-10-25T09:05:46.505+00:00",
+  "card_count": 119202,
+  "compressed_bytes": 12142718,
   "shards": [
     {
       "file": "cards-A_C.json.gz",
       "bucket": "A-C",
-      "count": 21430,
-      "bytes": 2215548
+      "count": 21477,
+      "bytes": 2221557
     },
     {
       "file": "cards-D_F.json.gz",
       "bucket": "D-F",
-      "count": 16872,
-      "bytes": 1685755
+      "count": 16918,
+      "bytes": 1691743
     },
     {
       "file": "cards-G_I.json.gz",
       "bucket": "G-I",
-      "count": 13632,
-      "bytes": 1383717
+      "count": 13652,
+      "bytes": 1386473
     },
     {
       "file": "cards-J_L.json.gz",
       "bucket": "J-L",
-      "count": 7955,
-      "bytes": 823949
+      "count": 8001,
+      "bytes": 829191
     },
     {
       "file": "cards-M_O.json.gz",
       "bucket": "M-O",
-      "count": 12426,
-      "bytes": 1244724
+      "count": 12450,
+      "bytes": 1247222
     },
     {
       "file": "cards-P_R.json.gz",
       "bucket": "P-R",
-      "count": 12270,
-      "bytes": 1241894
+      "count": 12305,
+      "bytes": 1246299
     },
     {
       "file": "cards-S_U.json.gz",
       "bucket": "S-U",
-      "count": 26016,
-      "bytes": 2643493
+      "count": 26088,
+      "bytes": 2652863
     },
     {
       "file": "cards-V_Z.json.gz",
       "bucket": "V-Z",
-      "count": 8235,
-      "bytes": 856720
+      "count": 8252,
+      "bytes": 859067
     },
     {
       "file": "cards-0_9.json.gz",
@@ -63,8 +63,8 @@
     {
       "file": "cards-other.json.gz",
       "bucket": "other",
-      "count": 46,
-      "bytes": 6120
+      "count": 48,
+      "bytes": 6462
     }
   ],
   "notes": "Default card dataset provides a representative card entry, not every set printing. Card images are hosted by Scryfall."
