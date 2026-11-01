@@ -1,70 +1,70 @@
 {
   "status": "ready",
   "source": "Scryfall default_cards bulk data",
-  "updated_at": "2026-10-25T13:44:50Z",
-  "scryfall_updated_at": "2026-10-25T09:05:46.505+00:00",
-  "card_count": 119202,
-  "compressed_bytes": 12142718,
+  "updated_at": "2026-11-01T02:25:32Z",
+  "scryfall_updated_at": "2026-10-31T21:06:29.482+00:00",
+  "card_count": 120019,
+  "compressed_bytes": 12934874,
   "shards": [
     {
       "file": "cards-A_C.json.gz",
       "bucket": "A-C",
-      "count": 21477,
-      "bytes": 2221557
+      "count": 21625,
+      "bytes": 2363746
     },
     {
       "file": "cards-D_F.json.gz",
       "bucket": "D-F",
-      "count": 16918,
-      "bytes": 1691743
+      "count": 17036,
+      "bytes": 1802983
     },
     {
       "file": "cards-G_I.json.gz",
       "bucket": "G-I",
-      "count": 13652,
-      "bytes": 1386473
+      "count": 13738,
+      "bytes": 1477174
     },
     {
       "file": "cards-J_L.json.gz",
       "bucket": "J-L",
-      "count": 8001,
-      "bytes": 829191
+      "count": 8059,
+      "bytes": 881262
     },
     {
       "file": "cards-M_O.json.gz",
       "bucket": "M-O",
-      "count": 12450,
-      "bytes": 1247222
+      "count": 12519,
+      "bytes": 1328129
     },
     {
       "file": "cards-P_R.json.gz",
       "bucket": "P-R",
-      "count": 12305,
-      "bytes": 1246299
+      "count": 12379,
+      "bytes": 1329075
     },
     {
       "file": "cards-S_U.json.gz",
       "bucket": "S-U",
-      "count": 26088,
-      "bytes": 2652863
+      "count": 26304,
+      "bytes": 2831761
     },
     {
       "file": "cards-V_Z.json.gz",
       "bucket": "V-Z",
-      "count": 8252,
-      "bytes": 859067
+      "count": 8302,
+      "bytes": 912460
     },
     {
       "file": "cards-0_9.json.gz",
       "bucket": "0-9",
       "count": 11,
-      "bytes": 1841
+      "bytes": 1873
     },
     {
       "file": "cards-other.json.gz",
       "bucket": "other",
-      "count": 48,
-      "bytes": 6462
+      "count": 46,
+      "bytes": 6411
     }
   ],
   "notes": "Default card dataset provides a representative card entry, not every set printing. Card images are hosted by Scryfall."
