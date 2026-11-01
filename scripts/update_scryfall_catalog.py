@@ -61,6 +61,7 @@ def simplify(card):
         "colors": card.get("colors") or [], "color_identity": card.get("color_identity") or [],
         "mana_cost": card.get("mana_cost") or ((card.get("card_faces") or [{}])[0].get("mana_cost", "")),
         "cmc": card.get("cmc", 0), "rarity": card.get("rarity", ""),
+        "artist": card.get("artist", ""),
         "image_url": first_image(card), "layout": card.get("layout", ""),
     }
 
