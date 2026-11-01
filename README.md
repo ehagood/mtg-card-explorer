@@ -17,6 +17,8 @@ V14 makes Scryfall the sole card catalog and removes the legacy Goblin-catalog w
 4. Commit and push the changes.
 5. Run the **Update Scryfall Catalog** GitHub Actions workflow once. This regenerates the Scryfall data shards with artist names included.
 
+The app cache-busts each data shard using the catalog update timestamp, preventing an old cached shard without artist fields from being reused. The status line reports how many distinct artists were loaded. If it reports zero artists, rerun the workflow after replacing the updater script.
+
 The updater creates/updates `data/scryfall/manifest.json` and the compressed shard files. The first catalog load can take a little time because the app loads the Scryfall data for broad text search. Use a current Chrome, Edge, Firefox, or Safari browser.
 
 ## Files
