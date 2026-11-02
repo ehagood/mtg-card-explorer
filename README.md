@@ -27,3 +27,9 @@ The updater creates/updates `data/scryfall/manifest.json` and the compressed sha
 - `styles.css` — responsive layout and mobile card-detail styling.
 - `scripts/update_scryfall_catalog.py` — builds the Scryfall catalog shards.
 - `.github/workflows/update-scryfall-catalog.yml` — example updater workflow; preserve your existing working workflow if it has newer settings.
+
+## V16: ManaBox collection filter
+
+This version includes `data/my-collection.json`, generated from the supplied ManaBox CSV export. The site matches owned cards by normalized card name because the Scryfall `default_cards` dataset contains representative printings rather than every printing, so exact printing IDs would not reliably match. Quantities are summed across printings/foil variants for each card name.
+
+To refresh your collection later, export a new ManaBox CSV and ask for a refreshed `data/my-collection.json` (or regenerate it with the supplied collection builder if included). The collection JSON is served by GitHub Pages, so anyone who can access a public repository/site may be able to download it. This file contains only card names, quantities, and row counts, not purchase prices or binder details.
