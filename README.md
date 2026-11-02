@@ -1,4 +1,4 @@
-# MTG Card Explorer — V14 (Scryfall Only)
+# MTG Card Explorer — V17 (Exact Collection Printings)
 
 V14 makes Scryfall the sole card catalog and removes the legacy Goblin-catalog workflow from the website UI. It preserves the V12 mobile card-detail behavior and the V13 Artist filter.
 
@@ -28,8 +28,10 @@ The updater creates/updates `data/scryfall/manifest.json` and the compressed sha
 - `scripts/update_scryfall_catalog.py` — builds the Scryfall catalog shards.
 - `.github/workflows/update-scryfall-catalog.yml` — example updater workflow; preserve your existing working workflow if it has newer settings.
 
-## V16: ManaBox collection filter
+## V17: Exact ManaBox printing filter
 
-This version includes `data/my-collection.json`, generated from the supplied ManaBox CSV export. The site matches owned cards by normalized card name because the Scryfall `default_cards` dataset contains representative printings rather than every printing, so exact printing IDs would not reliably match. Quantities are summed across printings/foil variants for each card name.
+V17 fixes the collection filter so it shows only the specific printings you own, not every printing of a card with the same name. The collection JSON is keyed by Scryfall ID, and the updater now downloads Scryfall's `all_cards` bulk dataset so the catalog includes individual printings.
 
-To refresh your collection later, export a new ManaBox CSV and ask for a refreshed `data/my-collection.json` (or regenerate it with the supplied collection builder if included). The collection JSON is served by GitHub Pages, so anyone who can access a public repository/site may be able to download it. This file contains only card names, quantities, and row counts, not purchase prices or binder details.
+After replacing the files, run the existing **Update Scryfall Catalog** workflow once. The new all-printings catalog is larger than the former representative-card catalog and may take longer to download/load. The collection JSON contains only Scryfall IDs, card names, set/collector details, and quantities—not purchase prices or binder details. It is still publicly accessible when hosted on a public GitHub Pages site.
+
+To refresh your collection later, export a new ManaBox CSV and regenerate `data/my-collection.json` from it using the same ID-based structure.
