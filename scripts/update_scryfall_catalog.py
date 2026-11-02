@@ -97,16 +97,16 @@ def main():
     print("Checking Scryfall bulk-data metadata…", flush=True)
     metadata = get_json(BULK_URL)
     entries = metadata.get("data", []) if isinstance(metadata, dict) else []
-    bulk = next((item for item in entries if item.get("type") == "default_cards"), None)
+    bulk = next((item for item in entries if item.get("type") == "all_cards"), None)
     if not bulk:
         details = metadata.get("details") or metadata.get("message") or metadata.get("object") if isinstance(metadata, dict) else type(metadata).__name__
-        raise RuntimeError(f"Could not find default_cards in Scryfall metadata. Response detail: {details!r}")
+        raise RuntimeError(f"Could not find all_cards in Scryfall metadata. Response detail: {details!r}")
     # Newer Scryfall exports may expose JSON Lines separately from the legacy download_uri.
     download_url = bulk.get("jsonl_download_uri") or bulk.get("download_uri")
     if not download_url:
-        raise RuntimeError("Scryfall returned default_cards metadata but no jsonl_download_uri or download_uri. Available fields: " + ", ".join(sorted(bulk.keys())))
+        raise RuntimeError("Scryfall returned all_cards metadata but no jsonl_download_uri or download_uri. Available fields: " + ", ".join(sorted(bulk.keys())))
     is_jsonl = bool(bulk.get("jsonl_download_uri"))
-    print(f"Downloading default card catalog ({'JSON Lines' if is_jsonl else 'legacy JSON'} format; not every duplicate printing)…", flush=True)
+    print(f"Downloading all-printings card catalog ({'JSON Lines' if is_jsonl else 'legacy JSON'} format; not every duplicate printing)…", flush=True)
     groups = {name: [] for name, _ in BUCKETS}
     count = 0
     for card in iter_cards(download_url, is_jsonl):
@@ -137,10 +137,10 @@ def main():
         print(f"  {filename}: {len(items):,} cards, {size / 1024 / 1024:.2f} MiB compressed", flush=True)
     now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     manifest = {
-        "status": "ready", "source": "Scryfall default_cards bulk data", "updated_at": now,
+        "status": "ready", "source": "Scryfall all_cards bulk data", "updated_at": now,
         "scryfall_updated_at": bulk.get("updated_at", ""), "card_count": count,
         "compressed_bytes": total_bytes, "shards": shards,
-        "notes": "Default card dataset provides a representative card entry, not every set printing. Card images are hosted by Scryfall.",
+        "notes": "All-printings card dataset includes individual printings so ManaBox collection entries can be matched by exact Scryfall ID. Card images are hosted by Scryfall.",
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Done: {count:,} cards across {len(shards)} shards; {total_bytes / 1024 / 1024:.2f} MiB compressed.", flush=True)
