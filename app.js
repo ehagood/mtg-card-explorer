@@ -21,7 +21,55 @@ function setMobileDetailMode(imageOnly){const detail=document.querySelector('.de
 function closeDetail(){$('modal').hidden=true;document.body.style.overflow='';setMobileDetailMode(false)}
 async function loadCollection(){if(collectionData)return collectionData;const r=await fetch('data/my-collection.json?v=17',{cache:'no-store'});if(!r.ok)throw new Error('Collection file not found. Add data/my-collection.json from the V17 ZIP.');collectionData=await r.json();const byId=new Map();for(const item of (collectionData.cards||[])){const id=clean(item.id);if(id)byId.set(id,(byId.get(id)||0)+Number(item.quantity||0))}for(const card of (scryfallCards||[]))card.collectionQuantity=byId.get(card.id)||0;return collectionData}
 async function loadBundled(){updateStatus('Connecting to the Scryfall catalog…');search()}
-async function loadScryfall(){if(scryfallCards)return scryfallCards;if(loadingScryfall)return loadingScryfall;loadingScryfall=(async()=>{updateStatus('Loading Scryfall card catalog. The first load may take a little while depending on your connection…');const mr=await fetch('data/scryfall/manifest.json',{cache:'no-store'});if(!mr.ok)throw new Error('No Scryfall manifest found. Run the GitHub Actions updater first.');const manifest=await mr.json();if(manifest.status!=='ready'||!Array.isArray(manifest.shards)||!manifest.shards.length)throw new Error('Scryfall catalog is not ready yet. Run the GitHub Actions updater first.');if(typeof DecompressionStream==='undefined')throw new Error('This browser does not support gzip decompression. Please use a current version of Chrome, Edge, Firefox, or Safari.');let loaded=[];let completed=0;const queue=[...manifest.shards];const worker=async()=>{while(queue.length){const shard=queue.shift();const r=await fetch('data/scryfall/'+shard.file+'?v='+encodeURIComponent(manifest.updated_at||'catalog'),{cache:'force-cache'});if(!r.ok)throw new Error('Could not download '+shard.file);const compressed=await r.arrayBuffer();const bytes=new Uint8Array(compressed);let json;if(bytes.length>=2&&bytes[0]===0x1f&&bytes[1]===0x8b){const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));json=await new Response(stream).text()}else{json=new TextDecoder().decode(compressed)}const cards=JSON.parse(json);loaded.push(...cards.map(c=>normCard(c,'scryfall')));completed++;updateStatus(`Loading Scryfall catalog… ${completed} of ${manifest.shards.length} data files (${loaded.length.toLocaleString()} cards).`);}};await Promise.all(Array.from({length:Math.min(4,queue.length)},worker));scryfallCards=loaded;let collectionSummary='';try{const collection=await loadCollection();collectionSummary=` · your collection: ${Number(collection.card_names||0).toLocaleString()} card names / ${Number(collection.total_cards||0).toLocaleString()} cards`;}catch(e){updateStatus('Scryfall catalog loaded, but your collection file could not be loaded: '+e.message);for(const card of scryfallCards)card.collectionQuantity=0;}const artistCount=new Set(scryfallCards.map(c=>c.artist).filter(Boolean)).size;updateStatus(`Scryfall catalog loaded: ${scryfallCards.length.toLocaleString()} cards · ${artistCount.toLocaleString()} artists${collectionSummary} · data updated ${manifest.updated_at||'date unknown'}.`);if(artistCount===0)updateStatus('Scryfall catalog loaded, but it contains no artist names. Run the Update Scryfall Catalog workflow again using the updated scripts/update_scryfall_catalog.py, then hard-refresh this page.');return scryfallCards})().finally(()=>{loadingScryfall=null});return loadingScryfall}
+async function loadScryfall(){
+  if(scryfallCards)return scryfallCards;
+  if(loadingScryfall)return loadingScryfall;
+  loadingScryfall=(async()=>{
+    updateStatus('Loading Scryfall catalog in mobile-friendly batches…');
+    const mr=await fetch('data/scryfall/manifest.json',{cache:'no-store'});
+    if(!mr.ok)throw new Error('No Scryfall manifest found. Run the GitHub Actions updater first.');
+    const manifest=await mr.json();
+    if(manifest.status!=='ready'||!Array.isArray(manifest.shards)||!manifest.shards.length)throw new Error('Scryfall catalog is not ready yet. Run the GitHub Actions updater first.');
+    if(typeof DecompressionStream==='undefined')throw new Error('This browser does not support gzip decompression. Please use a current version of Safari or another modern browser.');
+    const loaded=[];
+    let completed=0;
+    for(const shard of manifest.shards){
+      updateStatus(`Loading Scryfall catalog… ${completed} of ${manifest.shards.length} data files (${loaded.length.toLocaleString()} cards). Loading ${shard.file}…`);
+      const r=await fetch('data/scryfall/'+shard.file+'?v='+encodeURIComponent(manifest.updated_at||'catalog'),{cache:'force-cache'});
+      if(!r.ok)throw new Error('Could not download '+shard.file+' (HTTP '+r.status+').');
+      const compressed=await r.arrayBuffer();
+      let json;
+      const bytes=new Uint8Array(compressed);
+      if(bytes.length>=2&&bytes[0]===0x1f&&bytes[1]===0x8b){
+        const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));
+        json=await new Response(stream).text();
+      }else{
+        json=new TextDecoder().decode(compressed);
+      }
+      const cards=JSON.parse(json);
+      if(!Array.isArray(cards))throw new Error(shard.file+' did not contain a card array.');
+      // Avoid spreading a large shard into Array.push(...items): Safari can throw
+      // an argument/stack limit error on the largest all-printings shard.
+      for(let i=0;i<cards.length;i++)loaded.push(normCard(cards[i],'scryfall'));
+      completed++;
+      updateStatus(`Loading Scryfall catalog… ${completed} of ${manifest.shards.length} data files (${loaded.length.toLocaleString()} cards).`);
+    }
+    scryfallCards=loaded;
+    let collectionSummary='';
+    try{
+      const collection=await loadCollection();
+      collectionSummary=` · your collection: ${Number(collection.card_names||0).toLocaleString()} card names / ${Number(collection.total_cards||0).toLocaleString()} cards`;
+    }catch(e){
+      updateStatus('Scryfall catalog loaded, but your collection file could not be loaded: '+e.message);
+      for(const card of scryfallCards)card.collectionQuantity=0;
+    }
+    const artistCount=new Set(scryfallCards.map(c=>c.artist).filter(Boolean)).size;
+    updateStatus(`Scryfall catalog loaded: ${scryfallCards.length.toLocaleString()} cards · ${artistCount.toLocaleString()} artists${collectionSummary} · data updated ${manifest.updated_at||'date unknown'}.`);
+    if(artistCount===0)updateStatus('Scryfall catalog loaded, but it contains no artist names. Run the Update Scryfall Catalog workflow again using the updated scripts/update_scryfall_catalog.py, then hard-refresh this page.');
+    return scryfallCards;
+  })().finally(()=>{loadingScryfall=null});
+  return loadingScryfall;
+}
 function getWorkflowUrl(){const host=location.hostname;const parts=location.pathname.split('/').filter(Boolean);let owner='',repo='';if(host.endsWith('.github.io')){owner=host.slice(0,-'.github.io'.length);repo=parts[0]||`${owner}.github.io`}else{const saved=localStorage.getItem('mtgExplorerRepo');if(saved){const m=saved.match(/github\.com\/([^/]+)\/([^/]+)/i);if(m){owner=m[1];repo=m[2].replace(/\.git$/,'')}}}if(!owner||!repo){const entered=prompt('Enter your GitHub repository as OWNER/REPOSITORY (for example, edhagood/mtg-card-explorer):');const m=(entered||'').match(/^\s*(?:https?:\/\/github\.com\/)?([^/\s]+)\/([^/\s]+)\s*$/i);if(m){owner=m[1];repo=m[2].replace(/\.git$/,'');localStorage.setItem('mtgExplorerRepo',`https://github.com/${owner}/${repo}`)}}if(!owner||!repo)return null;return `https://github.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/workflows/update-scryfall-catalog.yml`}
 $('updateCatalogBtn').addEventListener('click',()=>{const url=getWorkflowUrl();if(!url){alert('Enter your GitHub repository as OWNER/REPOSITORY to open the updater workflow.');return}window.open(url,'_blank');alert('GitHub Actions should now be open in a new tab. Choose “Run workflow” and confirm. The website cannot safely update GitHub directly from a public browser, so the update runs securely in GitHub Actions.')});
 ['search','scope','setFilter','colorFilter','artistFilter','sort','collectionOnly'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{search()}));$('clear').addEventListener('click',()=>{$('search').value='';search();$('search').focus()});$('reset').addEventListener('click',()=>{$('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('collectionOnly').checked=false;$('sort').value='name';search()});$('grid').addEventListener('click',e=>{const card=e.target.closest('.card');if(card)showDetail(Number(card.dataset.index))});$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();showDetail(Number(e.target.dataset.index))}});$('modal').addEventListener('click',e=>{if(e.target.dataset.close)closeDetail()});document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){closeDetail();return}if(e.key==='ArrowLeft'){e.preventDefault();navigateDetail(-1);return}if(e.key==='ArrowRight'){e.preventDefault();navigateDetail(1)}});$('prevCard').addEventListener('click',()=>navigateDetail(-1));$('nextCard').addEventListener('click',()=>navigateDetail(1));$('viewMode').addEventListener('click',()=>{const detail=document.querySelector('.detail');setMobileDetailMode(!detail.classList.contains('image-only'))});if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))renderMore()},{rootMargin:'800px'});observer.observe($('sentinel'))}else window.addEventListener('scroll',()=>{if(window.innerHeight+window.scrollY>=document.body.offsetHeight-700)renderMore()});loadBundled();
