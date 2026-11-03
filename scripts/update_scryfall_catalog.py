@@ -12,6 +12,7 @@ OUT = ROOT / "data" / "scryfall"
 BULK_URL = "https://api.scryfall.com/bulk-data"
 USER_AGENT = "MTG-Card-Explorer-GitHub-Action/2.1 (bulk data updater)"
 HEADERS = {"User-Agent": USER_AGENT, "Accept": "application/json;q=0.9,*/*;q=0.8"}
+CARDS_PER_SHARD = 5000
 BUCKETS = [
     ("A-C", set("abc")), ("D-F", set("def")), ("G-I", set("ghi")),
     ("J-L", set("jkl")), ("M-O", set("mno")), ("P-R", set("pqr")),
@@ -94,6 +95,8 @@ def iter_cards(url, is_jsonl):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    for old_file in OUT.glob("cards-*.json.gz"):
+        old_file.unlink()
     print("Checking Scryfall bulk-data metadata…", flush=True)
     metadata = get_json(BULK_URL)
     entries = metadata.get("data", []) if isinstance(metadata, dict) else []
@@ -120,27 +123,32 @@ def main():
         raise RuntimeError("Scryfall bulk file contained no card records.")
     shards = []
     total_bytes = 0
+    # Keep every browser download small. Large all-printings JSON arrays can
+    # overwhelm mobile Safari during JSON.parse even when loaded sequentially.
     for name, _ in BUCKETS:
         items = groups[name]
         if not items:
             continue
         items.sort(key=lambda c: (c["name"].casefold(), c["set_name"].casefold(), c["collector_number"]))
-        filename = "cards-" + name.replace("-", "_") + ".json.gz"
-        target = OUT / filename
-        raw = json.dumps(items, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-        with target.open("wb") as raw_file:
-            with gzip.GzipFile(fileobj=raw_file, mode="wb", filename="", mtime=0, compresslevel=7) as gz:
-                gz.write(raw)
-        size = target.stat().st_size
-        total_bytes += size
-        shards.append({"file": filename, "bucket": name, "count": len(items), "bytes": size})
-        print(f"  {filename}: {len(items):,} cards, {size / 1024 / 1024:.2f} MiB compressed", flush=True)
+        chunk_count = (len(items) + CARDS_PER_SHARD - 1) // CARDS_PER_SHARD
+        for chunk_index in range(chunk_count):
+            chunk = items[chunk_index * CARDS_PER_SHARD:(chunk_index + 1) * CARDS_PER_SHARD]
+            filename = f"cards-{name.replace('-', '_')}-{chunk_index + 1:03d}.json.gz"
+            target = OUT / filename
+            raw = json.dumps(chunk, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            with target.open("wb") as raw_file:
+                with gzip.GzipFile(fileobj=raw_file, mode="wb", filename="", mtime=0, compresslevel=7) as gz:
+                    gz.write(raw)
+            size = target.stat().st_size
+            total_bytes += size
+            shards.append({"file": filename, "bucket": name, "count": len(chunk), "bytes": size})
+            print(f"  {filename}: {len(chunk):,} cards, {size / 1024 / 1024:.2f} MiB compressed", flush=True)
     now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     manifest = {
         "status": "ready", "source": "Scryfall all_cards bulk data", "updated_at": now,
         "scryfall_updated_at": bulk.get("updated_at", ""), "card_count": count,
         "compressed_bytes": total_bytes, "shards": shards,
-        "notes": "All-printings card dataset includes individual printings so ManaBox collection entries can be matched by exact Scryfall ID. Card images are hosted by Scryfall.",
+        "notes": "All-printings card dataset includes individual printings so ManaBox collection entries can be matched by exact Scryfall ID. Files are split into small 5,000-card shards for mobile browser compatibility. Card images are hosted by Scryfall.",
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Done: {count:,} cards across {len(shards)} shards; {total_bytes / 1024 / 1024:.2f} MiB compressed.", flush=True)
