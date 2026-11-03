@@ -1,14 +1,20 @@
-MTG Card Explorer V19 - Rebuilt Mobile Catalog Fix
+MTG Card Explorer V20 - Mobile catalog compatibility
 
-This is a fresh, minimal V19 package rebuilt from the working V18 page structure
-with the V19 mobile-friendly sequential catalog loader.
+Replace these files in your GitHub repository:
+  index.html
+  app.js
+  scripts/update_scryfall_catalog.py
 
-Replace ONLY these two files in your GitHub repository:
-  - index.html
-  - app.js
+Keep your existing styles.css, icons, site.webmanifest, data/my-collection.json,
+and your current GitHub Actions workflow.
 
-Keep your existing styles.css, icons, data/my-collection.json, Scryfall data,
-and GitHub Actions workflow unchanged.
+Then commit and push. After the new files are published, open GitHub Actions and
+run the existing "Update Scryfall Catalog" workflow. The updated updater writes
+all-printings data in 5,000-card compressed shards instead of a handful of very
+large files. The manifest is written last, so the site will use the new shard list
+once the workflow completes.
 
-Then commit/push and reload the site on your iPhone. If Safari shows the old
-version, close the tab and reopen the page.
+The website cache version is bumped to v20. After the workflow finishes, reload
+the site on the iPhone. The first load will download the smaller shards.
+
+No ManaBox CSV re-export is required. Keep data/my-collection.json as it is.
