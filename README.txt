@@ -1,8 +1,3 @@
-V21 iPhone Home Screen Icon Fix
+V22 iPhone icon metadata fix
 
-Upload these three files to the ROOT of your existing GitHub Pages repository, replacing index.html and site.webmanifest if present:
-- index.html
-- site.webmanifest
-- mtg-home-icon-v21.png
-
-Keep app.js, styles.css, your Scryfall data, and ManaBox collection unchanged. Commit and push. Then remove the old MTG Explorer home-screen shortcut from the iPhone, open the site in Safari, refresh, and use Share > Add to Home Screen. The new icon has a unique filename and the HTML uses an absolute GitHub Pages URL to avoid relative-path and stale-icon caching issues.
+Replace only index.html in the root of your GitHub Pages repository. Keep mtg-home-icon-v21.png in the repository root (the image URL is explicitly referenced by the HTML). The 32x32 browser favicon is embedded directly in index.html as a data URI. Commit and push, then remove the old iPhone home-screen shortcut and add it again from Safari. No catalog, JavaScript, CSS, collection, or workflow changes are included.
