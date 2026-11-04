@@ -1,0 +1,17 @@
+{
+  "name": "MTG Card Explorer",
+  "short_name": "MTG Explorer",
+  "start_url": "/mtg-card-explorer/",
+  "scope": "/mtg-card-explorer/",
+  "display": "standalone",
+  "background_color": "#101b35",
+  "theme_color": "#101b35",
+  "icons": [
+    {
+      "src": "/mtg-card-explorer/mtg-home-icon-v21.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

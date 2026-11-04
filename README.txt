@@ -1,20 +1,8 @@
-MTG Card Explorer V20 - Mobile catalog compatibility
+V21 iPhone Home Screen Icon Fix
 
-Replace these files in your GitHub repository:
-  index.html
-  app.js
-  scripts/update_scryfall_catalog.py
+Upload these three files to the ROOT of your existing GitHub Pages repository, replacing index.html and site.webmanifest if present:
+- index.html
+- site.webmanifest
+- mtg-home-icon-v21.png
 
-Keep your existing styles.css, icons, site.webmanifest, data/my-collection.json,
-and your current GitHub Actions workflow.
-
-Then commit and push. After the new files are published, open GitHub Actions and
-run the existing "Update Scryfall Catalog" workflow. The updated updater writes
-all-printings data in 5,000-card compressed shards instead of a handful of very
-large files. The manifest is written last, so the site will use the new shard list
-once the workflow completes.
-
-The website cache version is bumped to v20. After the workflow finishes, reload
-the site on the iPhone. The first load will download the smaller shards.
-
-No ManaBox CSV re-export is required. Keep data/my-collection.json as it is.
+Keep app.js, styles.css, your Scryfall data, and ManaBox collection unchanged. Commit and push. Then remove the old MTG Explorer home-screen shortcut from the iPhone, open the site in Safari, refresh, and use Share > Add to Home Screen. The new icon has a unique filename and the HTML uses an absolute GitHub Pages URL to avoid relative-path and stale-icon caching issues.
