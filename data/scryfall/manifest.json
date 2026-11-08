@@ -1,7 +1,7 @@
 {
   "status": "ready",
   "source": "Scryfall all_cards bulk data",
-  "updated_at": "2026-11-08T15:37:28Z",
+  "updated_at": "2026-11-08T16:01:58Z",
   "scryfall_updated_at": "2026-11-08T10:24:18.964+00:00",
   "card_count": 547979,
   "compressed_bytes": 44623171,
