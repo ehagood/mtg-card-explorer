@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101b35">
+<title>ManaBox Collection Updater · MTG Card Explorer</title>
+<style>
+:root{color-scheme:dark;--bg:#101b35;--panel:#182747;--line:#304365;--text:#f4f6fb;--muted:#b8c4d9;--accent:#e8bd62;--good:#8bd5a8;--bad:#ff9a9a}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#101b35,#0b1225);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:24px 16px calc(40px + env(safe-area-inset-bottom))}
+main{max-width:720px;margin:0 auto}.brand{display:flex;align-items:center;gap:13px;margin:8px 0 24px}.mana{width:48px;height:48px;border-radius:14px;background:linear-gradient(145deg,#243d68,#111c35);border:1px solid #60749b;display:grid;place-items:center;font-size:27px;color:var(--accent);box-shadow:0 8px 24px #0005}h1{font-size:clamp(24px,6vw,34px);line-height:1.1;margin:0}.sub{color:var(--muted);margin:7px 0 0}.panel{background:#182747eF;border:1px solid var(--line);border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 12px 36px #0003}h2{font-size:19px;margin:0 0 8px}.muted{color:var(--muted);font-size:14px}.steps{padding-left:21px;color:var(--muted);margin:12px 0}.steps li{padding:3px 0}.drop{display:block;border:2px dashed #61799e;border-radius:15px;padding:22px 16px;text-align:center;background:#101b3580;cursor:pointer}.drop strong{display:block;font-size:17px}.drop span{color:var(--muted);font-size:13px}.drop input{display:block;width:100%;margin:14px 0 0;color:var(--muted)}button,.download{border:0;border-radius:12px;background:var(--accent);color:#182238;font-weight:750;font-size:16px;padding:13px 17px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:48px}button:disabled{opacity:.45;cursor:not-allowed}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.secondary{background:#2b4064;color:var(--text);border:1px solid #52698d}.status{margin-top:15px;padding:12px 14px;border-radius:12px;background:#101b35;border:1px solid var(--line);color:var(--muted);font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}.status.good{border-color:#3e8060;color:var(--good)}.status.bad{border-color:#925050;color:var(--bad)}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}.stat{background:#101b35;border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center}.stat b{display:block;font-size:23px;color:var(--accent);font-variant-numeric:tabular-nums}.stat span{font-size:12px;color:var(--muted)}.privacy{font-size:13px;color:var(--muted);margin-top:12px}.hidden{display:none!important}code{color:#f4d997;background:#101b35;padding:2px 5px;border-radius:5px;overflow-wrap:anywhere}.note{border-left:3px solid var(--accent);padding-left:12px;color:var(--muted);font-size:14px}@media(max-width:440px){body{padding:18px 12px}.panel{padding:16px}.stats{gap:6px}.stat b{font-size:20px}}
+</style>
+</head>
+<body>
+<main>
+  <header class="brand"><div class="mana">✦</div><div><h1>ManaBox Collection Updater</h1><p class="sub">Prepare your collection file for MTG Card Explorer.</p></div></header>
+  <section class="panel">
+    <h2>1. Export your collection from ManaBox</h2>
+    <ol class="steps"><li>In ManaBox, open <b>Collection</b>.</li><li>Choose <b>Export</b> and select <b>CSV</b>.</li><li>Save the CSV to your iPhone's Files app.</li></ol>
+    <h2>2. Choose your CSV file</h2>
+    <label class="drop"><strong>Choose ManaBox CSV</strong><span>Select the CSV export from Files</span><input id="csvFile" type="file" accept=".csv,text/csv"></label>
+    <div class="actions"><button id="buildBtn" disabled>Build my collection file</button><button id="clearBtn" class="secondary" type="button">Clear</button></div>
+    <div id="status" class="status" aria-live="polite">Choose a ManaBox CSV to begin. Your collection is processed locally in this browser.</div>
+    <div id="stats" class="stats hidden"><div class="stat"><b id="names">0</b><span>Card names</span></div><div class="stat"><b id="printings">0</b><span>Unique printings</span></div><div class="stat"><b id="total">0</b><span>Total cards</span></div></div>
+    <div id="downloadArea" class="actions hidden"><a id="downloadLink" class="download" download="my-collection.json">Download my-collection.json</a></div>
+    <p class="privacy">🔒 Privacy: The CSV is read and converted entirely on your device. Nothing is uploaded or sent to a server. The tool only creates the JSON file for you to upload to GitHub.</p>
+  </section>
+  <section class="panel">
+    <h2>3. Replace the collection file on GitHub</h2>
+    <ol class="steps"><li>Download <code>my-collection.json</code> above.</li><li>Open your GitHub repository in Safari and go to <code>data/my-collection.json</code>.</li><li>Use the file's edit menu (pencil) or upload workflow to replace it with the new JSON. Commit the change.</li><li>Refresh MTG Card Explorer. You do <b>not</b> need to rerun the Scryfall catalog workflow.</li></ol>
+    <p class="note">The generated file uses the same version-2 structure as your existing collection file and matches individual printings by Scryfall ID. Copies of the same printing are combined into one entry with the correct quantity.</p>
+  </section>
+  <p class="muted" style="text-align:center;font-size:12px">MTG Card Explorer · ManaBox CSV converter · No external libraries</p>
+</main>
+<script>
+(()=>{
+ const fileInput=document.getElementById('csvFile'),buildBtn=document.getElementById('buildBtn'),clearBtn=document.getElementById('clearBtn'),status=document.getElementById('status'),stats=document.getElementById('stats'),downloadArea=document.getElementById('downloadArea'),downloadLink=document.getElementById('downloadLink');
+ let selectedFile=null,objectUrl=null;
+ const setStatus=(msg,kind='')=>{status.textContent=msg;status.className='status'+(kind?' '+kind:'')};
+ function parseCSV(text){
+   text=text.replace(/^\uFEFF/,'');const rows=[];let row=[],field='',quoted=false;
+   for(let i=0;i<text.length;i++){const c=text[i];if(quoted){if(c==='"'&&text[i+1]==='"'){field+='"';i++}else if(c==='"'){quoted=false}else field+=c}else{if(c==='"'&&field.length===0)quoted=true;else if(c===','){row.push(field);field=''}else if(c==='\n'){row.push(field);if(row.some(v=>v!==''))rows.push(row);row=[];field=''}else if(c==='\r'){if(text[i+1]==='\n')continue;row.push(field);if(row.some(v=>v!==''))rows.push(row);row=[];field=''}else field+=c}}
+   if(quoted)throw new Error('The CSV contains an unfinished quoted field. Please export it again from ManaBox.');row.push(field);if(row.some(v=>v!==''))rows.push(row);return rows;
+ }
+ function key(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,' ')}
+ function formatNum(n){return Number(n).toLocaleString()}
+ function build(text){const rows=parseCSV(text);if(rows.length<2)throw new Error('The CSV appears to contain a header but no card rows.');const headers=rows[0].map(key);const col={};['name','scryfall id','quantity','set code','set name','collector number'].forEach(h=>{col[h]=headers.indexOf(h)});const required=['name','scryfall id','quantity'];const missing=required.filter(h=>col[h]<0);if(missing.length)throw new Error('Missing required ManaBox columns: '+missing.join(', ')+'. Please use ManaBox’s Collection → Export → CSV option.');
+   const items=new Map();let ignored=0;for(let r=1;r<rows.length;r++){const cells=rows[r];const get=h=>col[h]>=0?(cells[col[h]]||'').trim():'';const id=get('scryfall id').toLowerCase(),name=get('name');if(!id||!name){ignored++;continue}let rawQty=get('quantity');let qty=rawQty===''?1:Number(rawQty);if(!Number.isFinite(qty)||qty<0)qty=1;qty=Math.trunc(qty);if(qty===0)continue;let item=items.get(id);if(!item){item={id,name,setCode:get('set code').toLowerCase(),setName:get('set name'),collectorNumber:get('collector number'),quantity:0,printings:0};items.set(id,item)}item.quantity+=qty;item.printings++}
+   const cards=Array.from(items.values()).sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'})||a.setCode.localeCompare(b.setCode)||a.collectorNumber.localeCompare(b.collectorNumber,undefined,{numeric:true}));const cardNames=new Set(cards.map(c=>c.name.toLocaleLowerCase()));const data={version:2,source:'ManaBox CSV export',match_strategy:'exact Scryfall ID / printing',card_names:cardNames.size,unique_printings:cards.length,total_cards:cards.reduce((sum,c)=>sum+c.quantity,0),cards};return {data,ignored,rows:rows.length-1};
+ }
+ fileInput.addEventListener('change',()=>{selectedFile=fileInput.files&&fileInput.files[0]||null;buildBtn.disabled=!selectedFile;stats.classList.add('hidden');downloadArea.classList.add('hidden');setStatus(selectedFile?`Selected: ${selectedFile.name} (${formatNum(selectedFile.size)} bytes). Tap “Build my collection file”.`:'Choose a ManaBox CSV to begin.');if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null}});
+ buildBtn.addEventListener('click',async()=>{if(!selectedFile)return;buildBtn.disabled=true;setStatus('Reading and converting your ManaBox export…');try{const text=await selectedFile.text();const result=build(text);const json=JSON.stringify(result.data);const blob=new Blob([json+'\n'],{type:'application/json;charset=utf-8'});if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(blob);downloadLink.href=objectUrl;downloadLink.download='my-collection.json';document.getElementById('names').textContent=formatNum(result.data.card_names);document.getElementById('printings').textContent=formatNum(result.data.unique_printings);document.getElementById('total').textContent=formatNum(result.data.total_cards);stats.classList.remove('hidden');downloadArea.classList.remove('hidden');setStatus(`Success! Processed ${formatNum(result.rows)} CSV rows. ${formatNum(result.ignored)} rows without a card name or Scryfall ID were skipped. Your new collection file is ready.`, 'good')}catch(e){setStatus('Could not convert the CSV: '+e.message,'bad')}finally{buildBtn.disabled=!selectedFile}});
+ clearBtn.addEventListener('click',()=>{fileInput.value='';selectedFile=null;buildBtn.disabled=true;stats.classList.add('hidden');downloadArea.classList.add('hidden');if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null}setStatus('Choose a ManaBox CSV to begin. Your collection is processed locally in this browser.')});
+})();
+</script>
+</body>
+</html>
