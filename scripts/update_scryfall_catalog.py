@@ -62,7 +62,7 @@ def simplify(card):
         "colors": card.get("colors") or [], "color_identity": card.get("color_identity") or [],
         "mana_cost": card.get("mana_cost") or ((card.get("card_faces") or [{}])[0].get("mana_cost", "")),
         "cmc": card.get("cmc", 0), "rarity": card.get("rarity", ""),
-        "artist": card.get("artist", ""),
+        "artist": card.get("artist", ""), "lang": card.get("lang", "en"),
         "image_url": first_image(card), "layout": card.get("layout", ""),
     }
 
@@ -109,11 +109,15 @@ def main():
     if not download_url:
         raise RuntimeError("Scryfall returned all_cards metadata but no jsonl_download_uri or download_uri. Available fields: " + ", ".join(sorted(bulk.keys())))
     is_jsonl = bool(bulk.get("jsonl_download_uri"))
-    print(f"Downloading all-printings card catalog ({'JSON Lines' if is_jsonl else 'legacy JSON'} format; not every duplicate printing)…", flush=True)
+    print(f"Downloading Scryfall all_cards source; retaining English printings only ({'JSON Lines' if is_jsonl else 'legacy JSON'} format; not every duplicate printing)…", flush=True)
     groups = {name: [] for name, _ in BUCKETS}
     count = 0
     for card in iter_cards(download_url, is_jsonl):
         if not card.get("name"):
+            continue
+        # Keep only English printings in the repository catalog. This reduces
+        # the stored shards and the amount of data browsers must download.
+        if card.get("lang") != "en":
             continue
         groups[bucket_for(card["name"])].append(simplify(card))
         count += 1
@@ -148,7 +152,7 @@ def main():
         "status": "ready", "source": "Scryfall all_cards bulk data", "updated_at": now,
         "scryfall_updated_at": bulk.get("updated_at", ""), "card_count": count,
         "compressed_bytes": total_bytes, "shards": shards,
-        "notes": "All-printings card dataset includes individual printings so ManaBox collection entries can be matched by exact Scryfall ID. Files are split into small 5,000-card shards for mobile browser compatibility. Card images are hosted by Scryfall.",
+        "notes": "English-language (lang=en) printings only. Individual printings are retained so ManaBox collection entries can be matched by exact Scryfall ID. Files are split into small 5,000-card shards for mobile browser compatibility. Card images are hosted by Scryfall.",
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Done: {count:,} cards across {len(shards)} shards; {total_bytes / 1024 / 1024:.2f} MiB compressed.", flush=True)
