@@ -10,7 +10,54 @@ function initializeFilters(){options('setFilter',[...new Set(allCards.map(c=>c.s
 function sourceCards(){return scryfallCards||[]}
 function updateStatus(message){$('catalogStatus').textContent=message}
 function search(){if(!scryfallCards){loadScryfall().then(()=>{allCards=sourceCards();initializeFilters();runSearch()}).catch(e=>{updateStatus('Could not load the Scryfall catalog: '+e.message+'');$('count').textContent='Scryfall catalog unavailable.';runSearch()});return}runSearch()}
-function runSearch(){allCards=sourceCards();const q=$('search').value.trim().toLocaleLowerCase();const scope=$('scope').value,set=$('setFilter').value,color=$('colorFilter').value,artist=$('artistFilter').value,sort=$('sort').value;filtered=allCards.filter(c=>{if(set&&c.set!==set)return false;if(color&&c.color!==color)return false;if(artist&&c.artist!==artist)return false;if(!q)return true;let values=scope==='name'?[c.name]:scope==='text'?[c.text]:scope==='flavor'?[c.flavor]:scope==='type'?[c.type]:scope==='artist'?[c.artist]:[c.name,c.artist,c.type,c.text,c.flavor,c.set,c.setCode,c.collector,c.color,c.rarity];return values.some(v=>v.toLocaleLowerCase().includes(q))});filtered.sort((a,b)=>sort==='name-desc'?b.name.localeCompare(a.name):sort==='set'?a.set.localeCompare(b.set)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));visible=0;$('grid').innerHTML='';$('empty').hidden=filtered.length>0;$('count').textContent=`${filtered.length.toLocaleString()} card${filtered.length===1?'':'s'} found`;const label='Scryfall catalog';$('catalogLabel').textContent=`${label} · ${allCards.length.toLocaleString()} loaded`;renderMore()}
+function runSearch(){allCards=sourceCards();const q=$('search').value.trim().toLocaleLowerCase();const scope=$('scope').value,set=$('setFilter').value,color=$('colorFilter').value,artist=$('artistFilter').value,sort=$('sort').value;filtered=allCards.filter(c=>{if(set&&c.set!==set)return false;if(color&&c.color!==color)return false;if(artist&&c.artist!==artist)return false;if(!q)return true;let values=scope==='name'?[c.name]:scope==='text'?[c.text]:scope==='flavor'?[c.flavor]:scope==='type'?[c.type]:scope==='artist'?[c.artist]:[c.name,c.artist,c.type,c.text,c.flavor,c.set,c.setCode,c.collector,c.color,c.rarity];return values.some(v=>v.toLocaleLowerCase().includes(q))});filtered.sort((a,b)=>sort==='name-desc'?b.name.localeCompare(a.name):sort==='set'?a.set.localeCompare(b.set)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));visible=0;$('grid').innerHTML='';$('empty').hidden=filtered.length>0;$('count').textContent=`${filtered.length.toLocaleString()} card${filtered.length===1?'':'s'} found`;setupExportButton();$('exportCSV').disabled=filtered.length===0;const label='Scryfall catalog';$('catalogLabel').textContent=`${label} · ${allCards.length.toLocaleString()} loaded`;renderMore()}
+
+function csvCell(value){
+  const text=String(value??'');
+  return /[",\r\n]/.test(text)?'"'+text.replace(/"/g,'""')+'"':text;
+}
+function exportCSV(){
+  if(!filtered.length)return;
+  // ManaBox's own collection CSV uses these field names. Scryfall ID is
+  // essential for identifying the exact printing; each printing is one row.
+  const rows=[['Name','Scryfall ID','Set code','Set name','Collector number','Quantity']];
+  let skipped=0;
+  for(const c of filtered){
+    if(!c.id||!c.name){skipped++;continue}
+    rows.push([c.name,c.id,c.setCode,c.set,c.collector,1]);
+  }
+  if(rows.length===1){
+    updateStatus('No exportable cards were found (Scryfall IDs are missing).');
+    return;
+  }
+  const csv='\uFEFF'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n')+'\r\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='mtg-card-search-results.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  updateStatus(`Exported ${ (rows.length-1).toLocaleString() } card printings to CSV${skipped?`; skipped ${skipped} cards without Scryfall IDs`:''}.`);
+}
+function setupExportButton(){
+  if($('exportCSV'))return;
+  const bar=document.querySelector('.resultsbar');
+  if(!bar)return;
+  const button=document.createElement('button');
+  button.type='button';
+  button.id='exportCSV';
+  button.className='textbtn exportbtn';
+  button.textContent='Export CSV';
+  button.title='Download all matching card printings as a ManaBox-compatible CSV';
+  button.setAttribute('aria-label','Export all matching card printings to a ManaBox-compatible CSV');
+  button.addEventListener('click',exportCSV);
+  const reset=$('reset');
+  bar.insertBefore(button,reset||null);
+}
+
 function cardHTML(c,index){const snippet=c.text||'';const printing=[c.setCode?'('+c.setCode.toUpperCase()+')':'',c.collector].filter(Boolean).join(' ');return `<article class="card" tabindex="0" role="button" data-index="${index}" aria-label="View ${esc(c.name)}"><img loading="lazy" src="${esc(c.image)}" alt="${esc(c.name)}" onerror="this.style.visibility='hidden'"><div class="name">${esc(c.name||'Unnamed card')}</div><div class="sourcebadge">${'Scryfall'}</div><div class="set">${esc(c.set)}${c.color?' · '+esc(c.color):''}</div>${printing?`<div class="printing">${esc(printing)}</div>`:''}${snippet?`<p class="snippet">${esc(snippet)}</p>`:''}${c.flavor?`<p class="flavorsnippet">${esc(c.flavor)}</p>`:''}</article>`}
 function renderMore(){const end=Math.min(visible+PAGE_SIZE,filtered.length);if(end<=visible)return;const frag=document.createDocumentFragment(),temp=document.createElement('div');temp.innerHTML=filtered.slice(visible,end).map((c,i)=>cardHTML(c,visible+i)).join('');while(temp.firstChild)frag.appendChild(temp.firstChild);$('grid').appendChild(frag);visible=end}
 let detailIndex=-1;
@@ -61,4 +108,13 @@ async function loadScryfall(){
   })().finally(()=>{loadingScryfall=null});
   return loadingScryfall;
 }
-['search','scope','setFilter','colorFilter','artistFilter','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{search()}));$('clear').addEventListener('click',()=>{$('search').value='';search();$('search').focus()});$('reset').addEventListener('click',()=>{$('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('sort').value='name';search()});$('grid').addEventListener('click',e=>{const card=e.target.closest('.card');if(card)showDetail(Number(card.dataset.index))});$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();showDetail(Number(e.target.dataset.index))}});$('modal').addEventListener('click',e=>{if(e.target.dataset.close)closeDetail()});document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){closeDetail();return}if(e.key==='ArrowLeft'){e.preventDefault();navigateDetail(-1);return}if(e.key==='ArrowRight'){e.preventDefault();navigateDetail(1)}});$('prevCard').addEventListener('click',()=>navigateDetail(-1));$('nextCard').addEventListener('click',()=>navigateDetail(1));$('viewMode').addEventListener('click',()=>{const detail=document.querySelector('.detail');setMobileDetailMode(!detail.classList.contains('image-only'))});if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))renderMore()},{rootMargin:'800px'});observer.observe($('sentinel'))}else window.addEventListener('scroll',()=>{if(window.innerHeight+window.scrollY>=document.body.offsetHeight-700)renderMore()});loadBundled();
+['search','scope','setFilter','colorFilter','artistFilter','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{search()}));$('clear').addEventListener('click',()=>{$('search').value='';search();$('search').focus()});$('reset').addEventListener('click',()=>{$('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('sort').value='name';search()});$('grid').addEventListener('click',e=>{const card=e.target.closest('.card');if(card)showDetail(Number(card.dataset.index))});$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();showDetail(Number(e.target.dataset.index))}});$('modal').addEventListener('click',e=>{if(e.target.dataset.close)closeDetail()});document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){closeDetail();return}if(e.key==='ArrowLeft'){e.preventDefault();navigateDetail(-1);return}if(e.key==='ArrowRight'){e.preventDefault();navigateDetail(1)}});$('prevCard').addEventListener('click',()=>navigateDetail(-1));$('nextCard').addEventListener('click',()=>navigateDetail(1));$('viewMode').addEventListener('click',()=>{const detail=document.querySelector('.detail');setMobileDetailMode(!detail.classList.contains('image-only'))});if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))renderMore()},{rootMargin:'800px'});observer.observe($('sentinel'))}else window.addEventListener('scroll',()=>{if(window.innerHeight+window.scrollY>=document.body.offsetHeight-700)renderMore()});
+(function addExportButtonStyle(){
+  if(document.getElementById('exportCSVStyle'))return;
+  const style=document.createElement('style');
+  style.id='exportCSVStyle';
+  style.textContent='.resultsbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.resultsbar #count{margin-right:auto}.resultsbar .exportbtn{white-space:nowrap}.resultsbar .exportbtn:disabled{opacity:.45;cursor:not-allowed}';
+  document.head.appendChild(style);
+})();
+
+loadBundled();
