@@ -1,701 +1,191 @@
 {
   "status": "ready",
   "source": "Scryfall all_cards bulk data",
-  "updated_at": "2026-11-08T16:01:58Z",
-  "scryfall_updated_at": "2026-11-08T10:24:18.964+00:00",
-  "card_count": 547979,
-  "compressed_bytes": 44623171,
+  "updated_at": "2026-11-10T13:56:13Z",
+  "scryfall_updated_at": "2026-11-10T10:25:37.566+00:00",
+  "card_count": 117394,
+  "compressed_bytes": 12793062,
   "shards": [
     {
       "file": "cards-A_C-001.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 411122
+      "bytes": 551648
     },
     {
       "file": "cards-A_C-002.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 416948
+      "bytes": 551408
     },
     {
       "file": "cards-A_C-003.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 398881
+      "bytes": 559869
     },
     {
       "file": "cards-A_C-004.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 407839
+      "bytes": 541754
     },
     {
       "file": "cards-A_C-005.json.gz",
       "bucket": "A-C",
-      "count": 5000,
-      "bytes": 419985
-    },
-    {
-      "file": "cards-A_C-006.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 407735
-    },
-    {
-      "file": "cards-A_C-007.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 420915
-    },
-    {
-      "file": "cards-A_C-008.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 429921
-    },
-    {
-      "file": "cards-A_C-009.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 405991
-    },
-    {
-      "file": "cards-A_C-010.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 406836
-    },
-    {
-      "file": "cards-A_C-011.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 432533
-    },
-    {
-      "file": "cards-A_C-012.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 425942
-    },
-    {
-      "file": "cards-A_C-013.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 418680
-    },
-    {
-      "file": "cards-A_C-014.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 396272
-    },
-    {
-      "file": "cards-A_C-015.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 385874
-    },
-    {
-      "file": "cards-A_C-016.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 406138
-    },
-    {
-      "file": "cards-A_C-017.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 410450
-    },
-    {
-      "file": "cards-A_C-018.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 426564
-    },
-    {
-      "file": "cards-A_C-019.json.gz",
-      "bucket": "A-C",
-      "count": 5000,
-      "bytes": 410941
-    },
-    {
-      "file": "cards-A_C-020.json.gz",
-      "bucket": "A-C",
-      "count": 3518,
-      "bytes": 296024
+      "count": 1195,
+      "bytes": 133596
     },
     {
       "file": "cards-D_F-001.json.gz",
       "bucket": "D-F",
       "count": 5000,
-      "bytes": 412619
+      "bytes": 544866
     },
     {
       "file": "cards-D_F-002.json.gz",
       "bucket": "D-F",
       "count": 5000,
-      "bytes": 424029
+      "bytes": 550363
     },
     {
       "file": "cards-D_F-003.json.gz",
       "bucket": "D-F",
       "count": 5000,
-      "bytes": 418997
+      "bytes": 522875
     },
     {
       "file": "cards-D_F-004.json.gz",
       "bucket": "D-F",
-      "count": 5000,
-      "bytes": 407561
-    },
-    {
-      "file": "cards-D_F-005.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 413552
-    },
-    {
-      "file": "cards-D_F-006.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 425509
-    },
-    {
-      "file": "cards-D_F-007.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 419653
-    },
-    {
-      "file": "cards-D_F-008.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 394673
-    },
-    {
-      "file": "cards-D_F-009.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 429110
-    },
-    {
-      "file": "cards-D_F-010.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 422280
-    },
-    {
-      "file": "cards-D_F-011.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 411946
-    },
-    {
-      "file": "cards-D_F-012.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 413574
-    },
-    {
-      "file": "cards-D_F-013.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 408606
-    },
-    {
-      "file": "cards-D_F-014.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 331473
-    },
-    {
-      "file": "cards-D_F-015.json.gz",
-      "bucket": "D-F",
-      "count": 5000,
-      "bytes": 355238
-    },
-    {
-      "file": "cards-D_F-016.json.gz",
-      "bucket": "D-F",
-      "count": 2582,
-      "bytes": 228276
+      "count": 1631,
+      "bytes": 160253
     },
     {
       "file": "cards-G_I-001.json.gz",
       "bucket": "G-I",
       "count": 5000,
-      "bytes": 398256
+      "bytes": 547744
     },
     {
       "file": "cards-G_I-002.json.gz",
       "bucket": "G-I",
       "count": 5000,
-      "bytes": 412014
+      "bytes": 569850
     },
     {
       "file": "cards-G_I-003.json.gz",
       "bucket": "G-I",
-      "count": 5000,
-      "bytes": 427617
-    },
-    {
-      "file": "cards-G_I-004.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 403575
-    },
-    {
-      "file": "cards-G_I-005.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 435363
-    },
-    {
-      "file": "cards-G_I-006.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 424762
-    },
-    {
-      "file": "cards-G_I-007.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 427444
-    },
-    {
-      "file": "cards-G_I-008.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 431761
-    },
-    {
-      "file": "cards-G_I-009.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 416655
-    },
-    {
-      "file": "cards-G_I-010.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 430318
-    },
-    {
-      "file": "cards-G_I-011.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 448974
-    },
-    {
-      "file": "cards-G_I-012.json.gz",
-      "bucket": "G-I",
-      "count": 5000,
-      "bytes": 309033
-    },
-    {
-      "file": "cards-G_I-013.json.gz",
-      "bucket": "G-I",
-      "count": 2766,
-      "bytes": 165295
+      "count": 3421,
+      "bytes": 343275
     },
     {
       "file": "cards-J_L-001.json.gz",
       "bucket": "J-L",
       "count": 5000,
-      "bytes": 421099
+      "bytes": 560344
     },
     {
       "file": "cards-J_L-002.json.gz",
       "bucket": "J-L",
-      "count": 5000,
-      "bytes": 379668
-    },
-    {
-      "file": "cards-J_L-003.json.gz",
-      "bucket": "J-L",
-      "count": 5000,
-      "bytes": 432797
-    },
-    {
-      "file": "cards-J_L-004.json.gz",
-      "bucket": "J-L",
-      "count": 5000,
-      "bytes": 406722
-    },
-    {
-      "file": "cards-J_L-005.json.gz",
-      "bucket": "J-L",
-      "count": 5000,
-      "bytes": 422424
-    },
-    {
-      "file": "cards-J_L-006.json.gz",
-      "bucket": "J-L",
-      "count": 5000,
-      "bytes": 387153
-    },
-    {
-      "file": "cards-J_L-007.json.gz",
-      "bucket": "J-L",
-      "count": 5000,
-      "bytes": 418547
-    },
-    {
-      "file": "cards-J_L-008.json.gz",
-      "bucket": "J-L",
-      "count": 945,
-      "bytes": 81792
+      "count": 2884,
+      "bytes": 311782
     },
     {
       "file": "cards-M_O-001.json.gz",
       "bucket": "M-O",
       "count": 5000,
-      "bytes": 429478
+      "bytes": 566434
     },
     {
       "file": "cards-M_O-002.json.gz",
       "bucket": "M-O",
       "count": 5000,
-      "bytes": 406403
+      "bytes": 501924
     },
     {
       "file": "cards-M_O-003.json.gz",
       "bucket": "M-O",
-      "count": 5000,
-      "bytes": 424864
-    },
-    {
-      "file": "cards-M_O-004.json.gz",
-      "bucket": "M-O",
-      "count": 5000,
-      "bytes": 405987
-    },
-    {
-      "file": "cards-M_O-005.json.gz",
-      "bucket": "M-O",
-      "count": 5000,
-      "bytes": 409762
-    },
-    {
-      "file": "cards-M_O-006.json.gz",
-      "bucket": "M-O",
-      "count": 5000,
-      "bytes": 261069
-    },
-    {
-      "file": "cards-M_O-007.json.gz",
-      "bucket": "M-O",
-      "count": 5000,
-      "bytes": 381805
-    },
-    {
-      "file": "cards-M_O-008.json.gz",
-      "bucket": "M-O",
-      "count": 5000,
-      "bytes": 404146
-    },
-    {
-      "file": "cards-M_O-009.json.gz",
-      "bucket": "M-O",
-      "count": 5000,
-      "bytes": 403858
-    },
-    {
-      "file": "cards-M_O-010.json.gz",
-      "bucket": "M-O",
-      "count": 5000,
-      "bytes": 421533
-    },
-    {
-      "file": "cards-M_O-011.json.gz",
-      "bucket": "M-O",
-      "count": 5000,
-      "bytes": 408163
-    },
-    {
-      "file": "cards-M_O-012.json.gz",
-      "bucket": "M-O",
-      "count": 3173,
-      "bytes": 251392
+      "count": 2263,
+      "bytes": 247099
     },
     {
       "file": "cards-P_R-001.json.gz",
       "bucket": "P-R",
       "count": 5000,
-      "bytes": 411125
+      "bytes": 508694
     },
     {
       "file": "cards-P_R-002.json.gz",
       "bucket": "P-R",
       "count": 5000,
-      "bytes": 409434
+      "bytes": 561487
     },
     {
       "file": "cards-P_R-003.json.gz",
       "bucket": "P-R",
-      "count": 5000,
-      "bytes": 280410
-    },
-    {
-      "file": "cards-P_R-004.json.gz",
-      "bucket": "P-R",
-      "count": 5000,
-      "bytes": 377117
-    },
-    {
-      "file": "cards-P_R-005.json.gz",
-      "bucket": "P-R",
-      "count": 5000,
-      "bytes": 423456
-    },
-    {
-      "file": "cards-P_R-006.json.gz",
-      "bucket": "P-R",
-      "count": 5000,
-      "bytes": 412190
-    },
-    {
-      "file": "cards-P_R-007.json.gz",
-      "bucket": "P-R",
-      "count": 5000,
-      "bytes": 395787
-    },
-    {
-      "file": "cards-P_R-008.json.gz",
-      "bucket": "P-R",
-      "count": 5000,
-      "bytes": 417733
-    },
-    {
-      "file": "cards-P_R-009.json.gz",
-      "bucket": "P-R",
-      "count": 5000,
-      "bytes": 426459
-    },
-    {
-      "file": "cards-P_R-010.json.gz",
-      "bucket": "P-R",
-      "count": 5000,
-      "bytes": 412265
-    },
-    {
-      "file": "cards-P_R-011.json.gz",
-      "bucket": "P-R",
-      "count": 5000,
-      "bytes": 427885
-    },
-    {
-      "file": "cards-P_R-012.json.gz",
-      "bucket": "P-R",
-      "count": 3465,
-      "bytes": 301491
+      "count": 2103,
+      "bytes": 245068
     },
     {
       "file": "cards-S_U-001.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 410058
+      "bytes": 548072
     },
     {
       "file": "cards-S_U-002.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 422200
+      "bytes": 554897
     },
     {
       "file": "cards-S_U-003.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 417339
+      "bytes": 514855
     },
     {
       "file": "cards-S_U-004.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 397881
+      "bytes": 544503
     },
     {
       "file": "cards-S_U-005.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 400229
+      "bytes": 559515
     },
     {
       "file": "cards-S_U-006.json.gz",
       "bucket": "S-U",
-      "count": 5000,
-      "bytes": 413422
-    },
-    {
-      "file": "cards-S_U-007.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 419591
-    },
-    {
-      "file": "cards-S_U-008.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 411688
-    },
-    {
-      "file": "cards-S_U-009.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 414756
-    },
-    {
-      "file": "cards-S_U-010.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 414682
-    },
-    {
-      "file": "cards-S_U-011.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 426409
-    },
-    {
-      "file": "cards-S_U-012.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 434359
-    },
-    {
-      "file": "cards-S_U-013.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 412682
-    },
-    {
-      "file": "cards-S_U-014.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 276236
-    },
-    {
-      "file": "cards-S_U-015.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 375715
-    },
-    {
-      "file": "cards-S_U-016.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 424480
-    },
-    {
-      "file": "cards-S_U-017.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 369978
-    },
-    {
-      "file": "cards-S_U-018.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 404615
-    },
-    {
-      "file": "cards-S_U-019.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 423950
-    },
-    {
-      "file": "cards-S_U-020.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 400886
-    },
-    {
-      "file": "cards-S_U-021.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 417911
-    },
-    {
-      "file": "cards-S_U-022.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 409421
-    },
-    {
-      "file": "cards-S_U-023.json.gz",
-      "bucket": "S-U",
-      "count": 5000,
-      "bytes": 430638
-    },
-    {
-      "file": "cards-S_U-024.json.gz",
-      "bucket": "S-U",
-      "count": 3895,
-      "bytes": 327278
+      "count": 733,
+      "bytes": 80365
     },
     {
       "file": "cards-V_Z-001.json.gz",
       "bucket": "V-Z",
       "count": 5000,
-      "bytes": 426067
+      "bytes": 562211
     },
     {
       "file": "cards-V_Z-002.json.gz",
       "bucket": "V-Z",
-      "count": 5000,
-      "bytes": 411523
-    },
-    {
-      "file": "cards-V_Z-003.json.gz",
-      "bucket": "V-Z",
-      "count": 5000,
-      "bytes": 401683
-    },
-    {
-      "file": "cards-V_Z-004.json.gz",
-      "bucket": "V-Z",
-      "count": 5000,
-      "bytes": 435191
-    },
-    {
-      "file": "cards-V_Z-005.json.gz",
-      "bucket": "V-Z",
-      "count": 5000,
-      "bytes": 411936
-    },
-    {
-      "file": "cards-V_Z-006.json.gz",
-      "bucket": "V-Z",
-      "count": 5000,
-      "bytes": 410279
-    },
-    {
-      "file": "cards-V_Z-007.json.gz",
-      "bucket": "V-Z",
-      "count": 5000,
-      "bytes": 412210
-    },
-    {
-      "file": "cards-V_Z-008.json.gz",
-      "bucket": "V-Z",
-      "count": 2509,
-      "bytes": 206852
+      "count": 3107,
+      "bytes": 340003
     },
     {
       "file": "cards-0_9-001.json.gz",
       "bucket": "0-9",
       "count": 11,
-      "bytes": 1873
+      "bytes": 1881
     },
     {
       "file": "cards-other-001.json.gz",
       "bucket": "other",
-      "count": 115,
-      "bytes": 11385
+      "count": 46,
+      "bytes": 6427
     }
   ],
-  "notes": "All-printings card dataset includes individual printings so ManaBox collection entries can be matched by exact Scryfall ID. Files are split into small 5,000-card shards for mobile browser compatibility. Card images are hosted by Scryfall."
+  "notes": "English-language (lang=en) printings only. Individual printings are retained so ManaBox collection entries can be matched by exact Scryfall ID. Files are split into small 5,000-card shards for mobile browser compatibility. Card images are hosted by Scryfall."
 }
