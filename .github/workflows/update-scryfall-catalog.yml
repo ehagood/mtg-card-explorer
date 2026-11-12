@@ -2,9 +2,9 @@ name: Update Scryfall Catalog
 
 on:
   workflow_dispatch:
-  # Optional automatic refresh every Sunday at 09:20 UTC.
+  # Optional automatic refresh everyday at 03:20 Central Time.
   schedule:
-    - cron: "20 9 * * 0"
+    - cron: "20 3 * * *"
 
 permissions:
   contents: write
