@@ -401,7 +401,7 @@ function renderSimilarCards(card){
   if(!matches.length)return '<div class="ce-empty">No strong matches were found in the loaded catalog. Try another card with more defined types, keywords, or rules text.</div>';
   return `<p class="ce-similar-intro">These suggestions are ranked using shared card types and subtypes, keywords, rules-text vocabulary, color identity, and mana value. They are similarity suggestions—not confirmed combos or guaranteed functional replacements.</p><div class="ce-similar-list">${matches.map(m=>`<button type="button" class="ce-similar-card" data-ce-similar-index="${m.index}">${m.card.image?`<img loading="lazy" src="${esc(m.card.image)}" alt="${esc(m.card.name)}">`:'<span class="ce-empty">No image</span>'}<span class="ce-similar-info"><span class="ce-similar-name">${esc(m.card.name)}</span><span class="ce-similar-type">${esc(m.card.type||'Card type unavailable')} · MV ${Number(m.card.manaValue)||0}</span><span class="ce-similar-reason">${esc(m.reasons.slice(0,2).join(' · '))}</span><span class="ce-similar-score">${esc(m.card.set||'Unknown set')}${m.card.setCode?' · '+esc(m.card.setCode.toUpperCase()):''}</span></span></button>`).join('')}</div>`;
 }
-const SPELLBOOK_API='https://backend.commanderspellbook.com/api/combos';
+const SPELLBOOK_API='/api/combos';
 const SPELLBOOK_SITE='https://commanderspellbook.com';
 const comboCache=new Map();
 function comboField(value){if(value==null)return '';if(Array.isArray(value))return value.map(comboField).filter(Boolean).join('\n');if(typeof value==='object')return String(value.name??value.display??value.text??value.description??'');return String(value)}
@@ -422,7 +422,7 @@ async function fetchCardCombos(card){
     if(!Array.isArray(rows))throw new Error('Commander Spellbook returned an unexpected response format.');
     return rows.filter(x=>comboContainsCard(x,card.name));
   }).catch(err=>{
-    if(err instanceof TypeError)throw new Error('Could not reach Commander Spellbook. Check your connection or whether the service permits browser requests (CORS).');
+    if(err instanceof TypeError)throw new Error("Could not reach the site combo proxy. The Cloudflare Function may not have deployed yet; check the deployment build logs.");
     throw err;
   });
   comboCache.set(key,promise);
