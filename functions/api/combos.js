@@ -12,13 +12,13 @@ export async function onRequestGet({ request }) {
     return Response.json({ error: "Invalid page number." }, { status: 400 });
   }
 
-  const upstream = new URL("https://backend.commanderspellbook.com/api/combos");
+  const upstream = new URL("https://backend.commanderspellbook.com/variants/");
   upstream.searchParams.set("q", query);
   upstream.searchParams.set("page", page);
 
   try {
     const response = await fetch(upstream.toString(), {
-      headers: { Accept: "application/json" },
+      headers: { Accept: "application/json", "User-Agent": "MTG-Card-Explorer/1.0" },
     });
     const body = await response.text();
     return new Response(body, {
