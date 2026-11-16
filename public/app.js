@@ -404,8 +404,8 @@ function renderSimilarCards(card){
 const SPELLBOOK_API='/api/combos';
 const SPELLBOOK_SITE='https://commanderspellbook.com';
 const comboCache=new Map();
-function comboField(value){if(value==null)return '';if(Array.isArray(value))return value.map(comboField).filter(Boolean).join('\n');if(typeof value==='object')return String(value.name??value.display??value.text??value.description??'');return String(value)}
-function comboCardNames(combo){const raw=combo.cards??combo.uses??combo.cardNames??combo.card_names??combo.ingredients??[];if(Array.isArray(raw))return raw.map(x=>typeof x==='string'?x:(x?.name??x?.card?.name??'')).filter(Boolean);if(typeof raw==='string')return raw.split(/\s*,\s*/).filter(Boolean);return []}
+function comboField(value){if(value==null)return '';if(Array.isArray(value))return value.map(comboField).filter(Boolean).join('\n');if(typeof value==='object')return String(value.feature?.name??value.template?.name??value.card?.name??value.name??value.display??value.text??value.description??'');return String(value)}
+function comboCardNames(combo){const raw=combo.cards??combo.uses??combo.cardNames??combo.card_names??combo.ingredients??[];if(Array.isArray(raw))return raw.map(x=>typeof x==='string'?x:(x?.card?.name??x?.name??'')).filter(Boolean);if(typeof raw==='string')return raw.split(/\s*,\s*/).filter(Boolean);return []}
 function comboContainsCard(combo,name){const key=cardNameKey(name);return comboCardNames(combo).some(n=>cardNameKey(n)===key)}
 function comboList(value){if(Array.isArray(value))return value.map(comboField).filter(Boolean);if(value==null||value==='')return [];return [comboField(value)]}
 function comboIsInfinite(combo){const results=comboList(combo.produces??combo.results??combo.outcomes??combo.result??combo.outcome);return results.some(x=>/infinite/i.test(x))||/infinite/i.test(comboField(combo.description??combo.name??''))}
