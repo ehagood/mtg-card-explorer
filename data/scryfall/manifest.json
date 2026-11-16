@@ -1,10 +1,10 @@
 {
   "status": "ready",
   "source": "Scryfall all_cards bulk data",
-  "updated_at": "2026-11-15T11:02:32Z",
-  "scryfall_updated_at": "2026-11-15T10:23:40.195+00:00",
-  "card_count": 117475,
-  "compressed_bytes": 12799247,
+  "updated_at": "2026-11-16T11:32:11Z",
+  "scryfall_updated_at": "2026-11-16T10:22:19.251+00:00",
+  "card_count": 117478,
+  "compressed_bytes": 12799822,
   "shards": [
     {
       "file": "cards-A_C-001.json.gz",
@@ -16,7 +16,7 @@
       "file": "cards-A_C-002.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 551646
+      "bytes": 551643
     },
     {
       "file": "cards-A_C-003.json.gz",
@@ -57,8 +57,8 @@
     {
       "file": "cards-D_F-004.json.gz",
       "bucket": "D-F",
-      "count": 1641,
-      "bytes": 160743
+      "count": 1642,
+      "bytes": 160791
     },
     {
       "file": "cards-G_I-001.json.gz",
@@ -112,7 +112,7 @@
       "file": "cards-P_R-001.json.gz",
       "bucket": "P-R",
       "count": 5000,
-      "bytes": 508184
+      "bytes": 508183
     },
     {
       "file": "cards-P_R-002.json.gz",
@@ -130,13 +130,13 @@
       "file": "cards-S_U-001.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 548380
+      "bytes": 548383
     },
     {
       "file": "cards-S_U-002.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 554475
+      "bytes": 554480
     },
     {
       "file": "cards-S_U-003.json.gz",
@@ -183,8 +183,8 @@
     {
       "file": "cards-other-001.json.gz",
       "bucket": "other",
-      "count": 46,
-      "bytes": 6427
+      "count": 48,
+      "bytes": 6950
     }
   ],
   "notes": "English-language (lang=en) printings only. Individual printings are retained so ManaBox collection entries can be matched by exact Scryfall ID. Files are split into small 5,000-card shards for mobile browser compatibility. Card images are hosted by Scryfall."
