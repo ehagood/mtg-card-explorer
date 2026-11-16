@@ -105,7 +105,7 @@ function resetAdvancedFilters(){
 
 function sourceCards(){return scryfallCards||[]}
 function updateStatus(message){$('catalogStatus').textContent=message}
-function search(){if(!scryfallCards){loadScryfall().then(()=>{allCards=sourceCards();initializeFilters();runSearch()}).catch(e=>{updateStatus('Could not load the Scryfall catalog: '+e.message+'');$('count').textContent='Scryfall catalog unavailable.';runSearch()});return}runSearch()}
+function search(){if(!scryfallCards){loadScryfall().then(()=>{allCards=sourceCards();initializeFilters();readSharedSearchFromURL();runSearch()}).catch(e=>{updateStatus('Could not load the Scryfall catalog: '+e.message+'');$('count').textContent='Scryfall catalog unavailable.';runSearch()});return}runSearch()}
 function runSearch(){
   allCards=sourceCards();
   const q=$('search').value.trim().toLocaleLowerCase();
@@ -132,7 +132,7 @@ function runSearch(){
   filtered.sort((a,b)=>sort==='name-desc'?b.name.localeCompare(a.name):sort==='set'?a.set.localeCompare(b.set)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
   visible=0;$('grid').innerHTML='';$('empty').hidden=filtered.length>0;
   $('count').textContent=`${filtered.length.toLocaleString()} card${filtered.length===1?'':'s'} found`;
-  setupExportButton();$('exportCSV').disabled=filtered.length===0;
+  setupExportButton();$('exportCSV').disabled=filtered.length===0;setupShareButton();
   const label='Scryfall catalog';$('catalogLabel').textContent=`${label} · ${allCards.length.toLocaleString()} loaded`;
   renderMore();
 }
@@ -167,6 +167,82 @@ function exportCSV(){
   setTimeout(()=>URL.revokeObjectURL(url),1000);
   updateStatus(`Exported ${ (rows.length-1).toLocaleString() } card printings to CSV${skipped?`; skipped ${skipped} cards without Scryfall IDs`:''}.`);
 }
+
+function readSharedSearchFromURL(){
+  const params=new URLSearchParams(window.location.search);
+  if(![...params.keys()].length)return;
+  const setIfValid=(id,key)=>{
+    const value=params.get(key);
+    if(value!==null&&$(id))$(id).value=value;
+  };
+  setIfValid('search','q');
+  setIfValid('scope','scope');
+  setIfValid('setFilter','set');
+  setIfValid('colorFilter','color');
+  setIfValid('artistFilter','artist');
+  setIfValid('sort','sort');
+  setIfValid('typeAdvanced','type');
+  setIfValid('rarityAdvanced','rarity');
+  setIfValid('manaMin','min');
+  setIfValid('manaMax','max');
+  if($('legendaryAdvanced'))$('legendaryAdvanced').checked=params.get('legendary')==='1';
+  const identity=params.get('identity')||'';
+  document.querySelectorAll('.identity-color').forEach(el=>el.checked=identity.includes(el.value));
+}
+function buildShareURL(){
+  const params=new URLSearchParams();
+  const add=(key,value)=>{if(value!==undefined&&value!==null&&String(value)!=='')params.set(key,String(value))};
+  add('q',$('search').value.trim());
+  add('scope',$('scope').value==='all'?'':$('scope').value);
+  add('set',$('setFilter').value);
+  add('color',$('colorFilter').value);
+  add('artist',$('artistFilter').value);
+  add('sort',$('sort').value==='name'?'':$('sort').value);
+  add('type',$('typeAdvanced')?.value||'');
+  add('rarity',$('rarityAdvanced')?.value||'');
+  add('min',$('manaMin')?.value||'');
+  add('max',$('manaMax')?.value||'');
+  const identity=[...document.querySelectorAll('.identity-color:checked')].map(el=>el.value).join('');
+  add('identity',identity);
+  if($('legendaryAdvanced')?.checked)params.set('legendary','1');
+  const query=params.toString();
+  return window.location.origin+window.location.pathname+(query?'?'+query:'');
+}
+async function shareSearch(){
+  const url=buildShareURL();
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(url);
+      updateStatus('Shareable search link copied to clipboard!');
+    }else{
+      const field=document.createElement('textarea');
+      field.value=url;field.setAttribute('readonly','');
+      field.style.position='fixed';field.style.opacity='0';
+      document.body.appendChild(field);field.select();
+      const copied=document.execCommand('copy');field.remove();
+      updateStatus(copied?'Shareable search link copied to clipboard!':'Copy this link: '+url);
+    }
+  }catch(error){
+    updateStatus('Copy this shareable search link: '+url);
+  }
+}
+function setupShareButton(){
+  if($('shareSearch'))return;
+  const bar=document.querySelector('.resultsbar');
+  if(!bar)return;
+  const button=document.createElement('button');
+  button.type='button';
+  button.id='shareSearch';
+  button.className='textbtn sharebtn';
+  button.textContent='Share Search';
+  button.title='Copy a link that opens this exact search and filter combination';
+  button.setAttribute('aria-label','Copy shareable link for current search');
+  button.addEventListener('click',shareSearch);
+  const exportButton=$('exportCSV');
+  if(exportButton)bar.insertBefore(button,exportButton);
+  else bar.appendChild(button);
+}
+
 function setupExportButton(){
   if($('exportCSV'))return;
   const bar=document.querySelector('.resultsbar');
@@ -234,6 +310,15 @@ async function loadScryfall(){
   return loadingScryfall;
 }
 ['search','scope','setFilter','colorFilter','artistFilter','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{search()}));$('clear').addEventListener('click',()=>{$('search').value='';search();$('search').focus()});$('reset').addEventListener('click',()=>{$('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('sort').value='name';resetAdvancedFilters();search()});$('grid').addEventListener('click',e=>{const card=e.target.closest('.card');if(card)showDetail(Number(card.dataset.index))});$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();showDetail(Number(e.target.dataset.index))}});$('modal').addEventListener('click',e=>{if(e.target.dataset.close)closeDetail()});document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){closeDetail();return}if(e.key==='ArrowLeft'){e.preventDefault();navigateDetail(-1);return}if(e.key==='ArrowRight'){e.preventDefault();navigateDetail(1)}});$('prevCard').addEventListener('click',()=>navigateDetail(-1));$('nextCard').addEventListener('click',()=>navigateDetail(1));$('viewMode').addEventListener('click',()=>{const detail=document.querySelector('.detail');setMobileDetailMode(!detail.classList.contains('image-only'))});if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))renderMore()},{rootMargin:'800px'});observer.observe($('sentinel'))}else window.addEventListener('scroll',()=>{if(window.innerHeight+window.scrollY>=document.body.offsetHeight-700)renderMore()});
+
+(function addShareSearchStyle(){
+  if(document.getElementById('shareSearchStyle'))return;
+  const style=document.createElement('style');
+  style.id='shareSearchStyle';
+  style.textContent='.resultsbar .sharebtn{white-space:nowrap}';
+  document.head.appendChild(style);
+})();
+
 (function addExportButtonStyle(){
   if(document.getElementById('exportCSVStyle'))return;
   const style=document.createElement('style');
