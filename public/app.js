@@ -401,28 +401,35 @@ function renderSimilarCards(card){
   if(!matches.length)return '<div class="ce-empty">No strong matches were found in the loaded catalog. Try another card with more defined types, keywords, or rules text.</div>';
   return `<p class="ce-similar-intro">These suggestions are ranked using shared card types and subtypes, keywords, rules-text vocabulary, color identity, and mana value. They are similarity suggestions—not confirmed combos or guaranteed functional replacements.</p><div class="ce-similar-list">${matches.map(m=>`<button type="button" class="ce-similar-card" data-ce-similar-index="${m.index}">${m.card.image?`<img loading="lazy" src="${esc(m.card.image)}" alt="${esc(m.card.name)}">`:'<span class="ce-empty">No image</span>'}<span class="ce-similar-info"><span class="ce-similar-name">${esc(m.card.name)}</span><span class="ce-similar-type">${esc(m.card.type||'Card type unavailable')} · MV ${Number(m.card.manaValue)||0}</span><span class="ce-similar-reason">${esc(m.reasons.slice(0,2).join(' · '))}</span><span class="ce-similar-score">${esc(m.card.set||'Unknown set')}${m.card.setCode?' · '+esc(m.card.setCode.toUpperCase()):''}</span></span></button>`).join('')}</div>`;
 }
-const SPELLBOOK_API='https://backend.commanderspellbook.com/variants/';
+const SPELLBOOK_API='https://backend.commanderspellbook.com/api/combos';
 const SPELLBOOK_SITE='https://commanderspellbook.com';
 const comboCache=new Map();
 function comboField(value){if(value==null)return '';if(Array.isArray(value))return value.map(comboField).filter(Boolean).join('\n');if(typeof value==='object')return String(value.name??value.display??value.text??value.description??'');return String(value)}
 function comboCardNames(combo){const raw=combo.cards??combo.uses??combo.cardNames??combo.card_names??combo.ingredients??[];if(Array.isArray(raw))return raw.map(x=>typeof x==='string'?x:(x?.name??x?.card?.name??'')).filter(Boolean);if(typeof raw==='string')return raw.split(/\s*,\s*/).filter(Boolean);return []}
 function comboContainsCard(combo,name){const key=cardNameKey(name);return comboCardNames(combo).some(n=>cardNameKey(n)===key)}
 function comboList(value){if(Array.isArray(value))return value.map(comboField).filter(Boolean);if(value==null||value==='')return [];return [comboField(value)]}
-function comboIsInfinite(combo){const results=comboList(combo.produces??combo.results??combo.outcomes??combo.result);return results.some(x=>/infinite/i.test(x))||/infinite/i.test(comboField(combo.description??combo.name??''))}
+function comboIsInfinite(combo){const results=comboList(combo.produces??combo.results??combo.outcomes??combo.result??combo.outcome);return results.some(x=>/infinite/i.test(x))||/infinite/i.test(comboField(combo.description??combo.name??''))}
 function comboUrl(combo){const id=combo.id??combo.spellbookId??combo.spellbook_id??combo.variantId??combo.variant_id;return id?SPELLBOOK_SITE+'/combo/'+encodeURIComponent(String(id))+'/':SPELLBOOK_SITE}
 async function fetchCardCombos(card){
   const key=card.oracleId||card.name;if(comboCache.has(key))return comboCache.get(key);
   const query='card:"'+String(card.name).replace(/"/g,'\\"')+'"';
-  const url=SPELLBOOK_API+'?q='+encodeURIComponent(query)+'&page=1&page_size=40';
-  const promise=fetch(url,{headers:{Accept:'application/json'}}).then(r=>{if(!r.ok)throw new Error(r.status===429?'Combo database is busy. Please try again shortly.':'Combo database returned HTTP '+r.status);return r.json()}).then(data=>{
-    const rows=Array.isArray(data)?data:(data.results??data.variants??data.items??[]);
+  const url=SPELLBOOK_API+'?q='+encodeURIComponent(query)+'&page=1';
+  const promise=fetch(url,{headers:{Accept:'application/json'}}).then(async r=>{
+    if(!r.ok)throw new Error(r.status===429?'Commander Spellbook is rate-limiting requests. Please try again shortly.':'Commander Spellbook returned HTTP '+r.status);
+    return r.json();
+  }).then(data=>{
+    const rows=Array.isArray(data)?data:(data.results??data.combos??data.variants??data.items??[]);
+    if(!Array.isArray(rows))throw new Error('Commander Spellbook returned an unexpected response format.');
     return rows.filter(x=>comboContainsCard(x,card.name));
+  }).catch(err=>{
+    if(err instanceof TypeError)throw new Error('Could not reach Commander Spellbook. Check your connection or whether the service permits browser requests (CORS).');
+    throw err;
   });
   comboCache.set(key,promise);
   try{return await promise}catch(err){comboCache.delete(key);throw err}
 }
 function renderComboCard(combo){
-  const cards=comboCardNames(combo),prereq=comboList(combo.easyPrerequisites??combo.easy_prerequisites??combo.prerequisites??combo.notablePrerequisites??combo.notable_prerequisites),steps=comboList(combo.description??combo.steps??combo.instructions),results=comboList(combo.produces??combo.results??combo.outcomes??combo.result),mana=comboField(combo.manaNeeded??combo.mana_needed),notes=comboField(combo.notes??combo.comment),infinite=comboIsInfinite(combo),url=comboUrl(combo),title=comboField(combo.name??combo.title)||cards.join(' + ')||'Known card combination';
+  const cards=comboCardNames(combo),prereq=comboList(combo.easyPrerequisites??combo.easy_prerequisites??combo.prerequisites??combo.notablePrerequisites??combo.notable_prerequisites),steps=comboList(combo.steps??combo.description??combo.instructions),results=comboList(combo.produces??combo.results??combo.outcomes??combo.result??combo.outcome),mana=comboField(combo.manaNeeded??combo.mana_needed),notes=comboField(combo.notes??combo.comment),infinite=comboIsInfinite(combo),url=comboUrl(combo),title=comboField(combo.name??combo.title)||cards.join(' + ')||'Known card combination';
   return `<article class="ce-combo"><div class="ce-combo-head"><h3 class="ce-combo-title">${esc(title)}</h3></div><div class="ce-combo-badges">${infinite?'<span class="ce-combo-badge infinite">Infinite result</span>':''}${mana?`<span class="ce-combo-badge">Mana: ${esc(mana)}</span>`:''}<span class="ce-combo-badge">${cards.length} cards</span></div><div class="ce-combo-section"><h4>Cards required</h4><p>${esc(cards.join(' · ')||'Card list unavailable')}</p></div>${prereq.length?`<div class="ce-combo-section"><h4>Prerequisites</h4><p>${esc(prereq.join('\n'))}</p></div>`:''}${steps.length?`<div class="ce-combo-section"><h4>How it works</h4>${steps.length>1?`<ol>${steps.map(x=>'<li>'+esc(x)+'</li>').join('')}</ol>`:`<p>${esc(steps[0])}</p>`}</div>`:''}${results.length?`<div class="ce-combo-section"><h4>Results</h4><p>${esc(results.join('\n'))}</p></div>`:''}${notes?`<div class="ce-combo-section"><h4>Notes</h4><p>${esc(notes)}</p></div>`:''}<div class="ce-combo-source">Combo data from <a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Commander Spellbook</a></div></article>`;
 }
 async function renderCardCombos(card,content){
