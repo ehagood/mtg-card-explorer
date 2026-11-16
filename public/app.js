@@ -349,7 +349,7 @@ function addCardExplorerStyles(){
     .card-explorer-tab[aria-selected=true]{border-color:#76633f;background:#302b21;color:#f1d49a}
     .card-explorer-content{padding:20px;overflow:auto;min-height:0;flex:1}.ce-overview{display:grid;grid-template-columns:minmax(180px,290px) 1fr;gap:24px;align-items:start}
     .ce-image{width:100%;max-width:290px;display:block;border-radius:13px;box-shadow:0 12px 35px #0008}.ce-type{color:#c4cad7;margin:5px 0 18px}.ce-section-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:20px 0 8px}.ce-rules{white-space:pre-line;line-height:1.65}.ce-meta{color:var(--muted);font-size:12px;line-height:1.8;margin-top:15px;padding-top:13px;border-top:1px solid var(--line)}
-    .ce-printings{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}.ce-printing{min-width:0;padding:10px;border:1px solid var(--line);border-radius:12px;background:#202431}.ce-printing img{width:100%;aspect-ratio:488/680;object-fit:contain;border-radius:8px;background:#11131a}.ce-printing-name{font-weight:700;font-size:12px;margin:7px 0 3px;overflow-wrap:anywhere}.ce-printing-meta{font-size:11px;color:var(--muted);line-height:1.5}.ce-empty{color:var(--muted);padding:20px;border:1px dashed var(--line);border-radius:12px}.ce-placeholder{max-width:650px;margin:25px auto;text-align:center;padding:35px 22px;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}.ce-placeholder strong{display:block;color:var(--text);font-size:18px;margin-bottom:8px}
+    .ce-printings{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}.ce-printing{min-width:0;padding:10px;border:1px solid var(--line);border-radius:12px;background:#202431}.ce-printing img{width:100%;aspect-ratio:488/680;object-fit:contain;border-radius:8px;background:#11131a}.ce-printing-name{font-weight:700;font-size:12px;margin:7px 0 3px;overflow-wrap:anywhere}.ce-printing-meta{font-size:11px;color:var(--muted);line-height:1.5}.ce-empty{color:var(--muted);padding:20px;border:1px dashed var(--line);border-radius:12px}.ce-placeholder{max-width:650px;margin:25px auto;text-align:center;padding:35px 22px;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}.ce-placeholder strong{display:block;color:var(--text);font-size:18px;margin-bottom:8px}.ce-similar-intro{color:var(--muted);margin:0 0 14px;line-height:1.55}.ce-similar-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:12px}.ce-similar-card{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;min-width:0;padding:11px;border:1px solid var(--line);border-radius:12px;background:#202431;color:var(--text);cursor:pointer}.ce-similar-card:hover{border-color:#a58b58;background:#292d39}.ce-similar-card img{width:76px;flex:none;aspect-ratio:488/680;object-fit:contain;border-radius:7px;background:#11131a}.ce-similar-info{min-width:0;flex:1}.ce-similar-name{font-weight:750;line-height:1.3;overflow-wrap:anywhere}.ce-similar-type{font-size:11px;color:var(--muted);margin:4px 0 7px}.ce-similar-reason{font-size:12px;color:#e0c68f;line-height:1.45}.ce-similar-score{font-size:10px;color:var(--muted);margin-top:6px}
     @media(max-width:650px){.card-explorer-modal{padding:5px}.card-explorer-window{height:calc(100vh - 10px);border-radius:13px}.card-explorer-header{padding:12px}.card-explorer-content{padding:14px}.ce-overview{grid-template-columns:1fr;gap:15px}.ce-image{max-width:210px;margin:auto}.card-explorer-tabs{padding:8px}.card-explorer-tab{padding:8px 11px;font-size:12px}.ce-printings{grid-template-columns:repeat(2,minmax(0,1fr))}}
   `;document.head.appendChild(style);
 }
@@ -357,15 +357,50 @@ function ensureCardExplorerModal(){
   if($('cardExplorerModal'))return;
   const modal=document.createElement('div');modal.id='cardExplorerModal';modal.className='card-explorer-modal';modal.hidden=true;
   modal.innerHTML=`<div class="card-explorer-shade" data-ce-close="1"></div><section class="card-explorer-window" role="dialog" aria-modal="true" aria-labelledby="cardExplorerTitle"><header class="card-explorer-header"><div><div class="card-explorer-kicker">MTG CARD EXPLORER</div><h2 id="cardExplorerTitle"></h2></div><button type="button" class="card-explorer-close" data-ce-close="1" aria-label="Close Card Explorer">×</button></header><nav class="card-explorer-tabs" role="tablist" aria-label="Card information"><button type="button" class="card-explorer-tab" data-ce-tab="overview" aria-selected="true">Overview</button><button type="button" class="card-explorer-tab" data-ce-tab="printings" aria-selected="false">Printings</button><button type="button" class="card-explorer-tab" data-ce-tab="combos" aria-selected="false">Combos</button><button type="button" class="card-explorer-tab" data-ce-tab="similar" aria-selected="false">Similar Cards</button></nav><div class="card-explorer-content" id="cardExplorerContent"></div></section>`;
-  document.body.appendChild(modal);modal.addEventListener('click',e=>{if(e.target.dataset.ceClose){closeCardExplorer();return}const tab=e.target.closest('[data-ce-tab]');if(tab)selectCardExplorerTab(tab.dataset.ceTab)});
+  document.body.appendChild(modal);modal.addEventListener('click',e=>{if(e.target.dataset.ceClose){closeCardExplorer();return}const similar=e.target.closest('[data-ce-similar-index]');if(similar){const next=allCards[Number(similar.dataset.ceSimilarIndex)];if(next)openCardExplorer(next,true);return}const tab=e.target.closest('[data-ce-tab]');if(tab)selectCardExplorerTab(tab.dataset.ceTab)});
   document.addEventListener('keydown',e=>{if(!$('cardExplorerModal')||$('cardExplorerModal').hidden)return;if(e.key==='Escape'){closeCardExplorer();e.stopPropagation()}});
   addCardExplorerStyles();
 }
 let cardExplorerCard=null,cardExplorerTab='overview';
-function openCardExplorer(card){cardExplorerCard=card;cardExplorerTab='overview';closeDetail();ensureCardExplorerModal();$('cardExplorerTitle').textContent=card.name;$('cardExplorerModal').hidden=false;document.body.style.overflow='hidden';renderCardExplorerTab()}
+function openCardExplorer(card,keepTab=false){cardExplorerCard=card;if(!keepTab)cardExplorerTab='overview';closeDetail();ensureCardExplorerModal();$('cardExplorerTitle').textContent=card.name;$('cardExplorerModal').hidden=false;document.body.style.overflow='hidden';document.querySelectorAll('.card-explorer-tab').forEach(el=>el.setAttribute('aria-selected',String(el.dataset.ceTab===cardExplorerTab)));renderCardExplorerTab()}
 function closeCardExplorer(){if(!$('cardExplorerModal'))return;$('cardExplorerModal').hidden=true;document.body.style.overflow='';cardExplorerCard=null}
 function selectCardExplorerTab(tab){cardExplorerTab=tab;document.querySelectorAll('.card-explorer-tab').forEach(el=>el.setAttribute('aria-selected',String(el.dataset.ceTab===tab)));renderCardExplorerTab()}
 function getCardPrintings(card){if(card.oracleId)return allCards.filter(x=>x.oracleId===card.oracleId);return allCards.filter(x=>cardNameKey(x.name)===cardNameKey(card.name))}
+const SIMILAR_STOP_WORDS=new Set('this that with from your have into when then than them they their there here each other another target targets card cards creature creatures player players opponent opponents control controls battlefield graveyard library hand exile cast create gets get gain loses lose may can could would should until end turn beginning whenever when if while all any each one two three four five six seven eight nine ten a an the and or but for of to in on by as is are be it its do does not no you'.split(' '));
+function similarityTokens(text){return new Set(String(text||'').toLowerCase().replace(/\{[^}]+\}/g,' ').replace(/[^a-z0-9'-]+/g,' ').split(/\s+/).filter(w=>w.length>=4&&!SIMILAR_STOP_WORDS.has(w)&&!/^\d+$/.test(w)))}
+function typeParts(typeLine){const parts=String(typeLine||'').split(/[—–-]/);const main=(parts[0]||'').toLowerCase().trim().split(/\s+/).filter(Boolean);const sub=(parts.slice(1).join(' ')||'').toLowerCase().trim().split(/\s+/).filter(Boolean);return {main,sub}}
+function getSimilarCards(card){
+  const baseType=typeParts(card.type),baseKeywords=new Set((card.keywords||[]).map(x=>String(x).toLowerCase())),baseTokens=similarityTokens(card.text),baseIdentity=new Set(card.colorIdentity||[]);
+  const candidates=new Map();
+  allCards.forEach((candidate,index)=>{
+    if(candidate.oracleId&&card.oracleId&&candidate.oracleId===card.oracleId)return;
+    if(cardNameKey(candidate.name)===cardNameKey(card.name))return;
+    const key=candidate.oracleId||cardNameKey(candidate.name);if(!key||candidates.has(key))return;
+    const t=typeParts(candidate.type),sharedSub=t.sub.filter(x=>baseType.sub.includes(x)),sharedMain=t.main.filter(x=>baseType.main.includes(x));
+    const sharedKeywords=(candidate.keywords||[]).filter(x=>baseKeywords.has(String(x).toLowerCase()));
+    const tokens=similarityTokens(candidate.text),sharedTerms=[...tokens].filter(x=>baseTokens.has(x));
+    const union=new Set([...tokens,...baseTokens]);const textRatio=union.size?sharedTerms.length/union.size:0;
+    const sharedColors=(candidate.colorIdentity||[]).filter(x=>baseIdentity.has(x)).length;
+    const manaDistance=Math.abs((Number(candidate.manaValue)||0)-(Number(card.manaValue)||0));
+    let score=sharedSub.length*15+sharedMain.length*5+sharedKeywords.length*12+Math.min(sharedTerms.length,12)*1.7+textRatio*18+sharedColors*1.5+(manaDistance<=1?2:manaDistance<=2?1:0);
+    if(candidate.type&&card.type&&candidate.type.toLowerCase()===card.type.toLowerCase())score+=4;
+    if(!score)return;
+    const reasons=[];
+    if(sharedSub.length)reasons.push('Shares subtype: '+sharedSub.slice(0,3).map(x=>x[0].toUpperCase()+x.slice(1)).join(', '));
+    if(sharedKeywords.length)reasons.push('Shared keyword: '+sharedKeywords.slice(0,3).join(', '));
+    if(sharedMain.length&&!sharedSub.length)reasons.push('Same card type: '+sharedMain.slice(0,2).join(', '));
+    if(sharedTerms.length>=3)reasons.push('Related rules text');
+    if(!reasons.length&&sharedColors)reasons.push('Similar color identity');
+    if(!reasons.length)reasons.push('Similar card characteristics');
+    candidates.set(key,{card:candidate,index,score,reasons});
+  });
+  return [...candidates.values()].filter(x=>x.score>=7).sort((a,b)=>b.score-a.score||a.card.name.localeCompare(b.card.name)).slice(0,30);
+}
+function renderSimilarCards(card){
+  const matches=getSimilarCards(card);
+  if(!matches.length)return '<div class="ce-empty">No strong matches were found in the loaded catalog. Try another card with more defined types, keywords, or rules text.</div>';
+  return `<p class="ce-similar-intro">These suggestions are ranked using shared card types and subtypes, keywords, rules-text vocabulary, color identity, and mana value. They are similarity suggestions—not confirmed combos or guaranteed functional replacements.</p><div class="ce-similar-list">${matches.map(m=>`<button type="button" class="ce-similar-card" data-ce-similar-index="${m.index}">${m.card.image?`<img loading="lazy" src="${esc(m.card.image)}" alt="${esc(m.card.name)}">`:'<span class="ce-empty">No image</span>'}<span class="ce-similar-info"><span class="ce-similar-name">${esc(m.card.name)}</span><span class="ce-similar-type">${esc(m.card.type||'Card type unavailable')} · MV ${Number(m.card.manaValue)||0}</span><span class="ce-similar-reason">${esc(m.reasons.slice(0,2).join(' · '))}</span><span class="ce-similar-score">${esc(m.card.set||'Unknown set')}${m.card.setCode?' · '+esc(m.card.setCode.toUpperCase()):''}</span></span></button>`).join('')}</div>`;
+}
 function renderCardExplorerTab(){
   if(!cardExplorerCard||!$('cardExplorerContent'))return;
   const c=cardExplorerCard,content=$('cardExplorerContent');
@@ -378,7 +413,7 @@ function renderCardExplorerTab(){
   }else if(cardExplorerTab==='combos'){
     content.innerHTML='<div class="ce-placeholder"><strong>Combo Finder is coming next.</strong>We will connect this tab to a curated combo database so that known interactions can be explained accurately, including required pieces, conditions, and whether a combo is infinite. For now, this tab intentionally does not guess at combos from matching card text.</div>';
   }else{
-    content.innerHTML='<div class="ce-placeholder"><strong>Similar Cards is coming next.</strong>We will build this from the catalog using card types, creature subtypes, keywords, color identity, and rules text. The goal is to show meaningful alternatives and strategic overlaps—not just cards that happen to share a word.</div>';
+    content.innerHTML=renderSimilarCards(c);
   }
 }
 
