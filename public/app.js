@@ -132,7 +132,7 @@ function runSearch(){
   filtered.sort((a,b)=>sort==='name-desc'?b.name.localeCompare(a.name):sort==='set'?a.set.localeCompare(b.set)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
   visible=0;$('grid').innerHTML='';$('empty').hidden=filtered.length>0;
   $('count').textContent=`${filtered.length.toLocaleString()} card${filtered.length===1?'':'s'} found`;
-  setupExportButton();$('exportCSV').disabled=filtered.length===0;setupShareButton();
+  setupExportButton();$('exportCSV').disabled=filtered.length===0;setupShareButton();setupSavedSearchUI();
   const label='Scryfall catalog';$('catalogLabel').textContent=`${label} · ${allCards.length.toLocaleString()} loaded`;
   renderMore();
 }
@@ -168,26 +168,23 @@ function exportCSV(){
   updateStatus(`Exported ${ (rows.length-1).toLocaleString() } card printings to CSV${skipped?`; skipped ${skipped} cards without Scryfall IDs`:''}.`);
 }
 
-function readSharedSearchFromURL(){
-  const params=new URLSearchParams(window.location.search);
-  if(![...params.keys()].length)return;
+function applySearchParams(params){
+  $('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('sort').value='name';
+  resetAdvancedFilters();
   const setIfValid=(id,key)=>{
     const value=params.get(key);
     if(value!==null&&$(id))$(id).value=value;
   };
-  setIfValid('search','q');
-  setIfValid('scope','scope');
-  setIfValid('setFilter','set');
-  setIfValid('colorFilter','color');
-  setIfValid('artistFilter','artist');
-  setIfValid('sort','sort');
-  setIfValid('typeAdvanced','type');
-  setIfValid('rarityAdvanced','rarity');
-  setIfValid('manaMin','min');
-  setIfValid('manaMax','max');
+  setIfValid('search','q');setIfValid('scope','scope');setIfValid('setFilter','set');setIfValid('colorFilter','color');setIfValid('artistFilter','artist');setIfValid('sort','sort');
+  setIfValid('typeAdvanced','type');setIfValid('rarityAdvanced','rarity');setIfValid('manaMin','min');setIfValid('manaMax','max');
   if($('legendaryAdvanced'))$('legendaryAdvanced').checked=params.get('legendary')==='1';
   const identity=params.get('identity')||'';
   document.querySelectorAll('.identity-color').forEach(el=>el.checked=identity.includes(el.value));
+}
+function readSharedSearchFromURL(){
+  const params=new URLSearchParams(window.location.search);
+  if(![...params.keys()].length)return;
+  applySearchParams(params);
 }
 function buildShareURL(){
   const params=new URLSearchParams();
@@ -241,6 +238,73 @@ function setupShareButton(){
   const exportButton=$('exportCSV');
   if(exportButton)bar.insertBefore(button,exportButton);
   else bar.appendChild(button);
+}
+
+const SAVED_SEARCHES_KEY='mtgCardExplorer.savedSearches.v1';
+function getSavedSearches(){
+  try{const value=JSON.parse(localStorage.getItem(SAVED_SEARCHES_KEY)||'[]');return Array.isArray(value)?value.filter(x=>x&&typeof x.name==='string'&&typeof x.params==='string'):[]}
+  catch(error){return[]}
+}
+function writeSavedSearches(items){
+  try{localStorage.setItem(SAVED_SEARCHES_KEY,JSON.stringify(items));return true}
+  catch(error){updateStatus('Could not save searches. Browser storage may be full or disabled.');return false}
+}
+function setupSavedSearchUI(){
+  if($('saveSearch')||!document.querySelector('.resultsbar'))return;
+  const bar=document.querySelector('.resultsbar');
+  const save=document.createElement('button');save.type='button';save.id='saveSearch';save.className='textbtn';save.textContent='Save Search';save.title='Save the current search in this browser';
+  save.addEventListener('click',()=>{
+    const name=window.prompt('Name this search:');if(name===null)return;
+    const trimmed=name.trim();if(!trimmed){updateStatus('Please enter a name for this saved search.');return}
+    const items=getSavedSearches();
+    const duplicate=items.findIndex(x=>x.name.toLocaleLowerCase()===trimmed.toLocaleLowerCase());
+    const entry={name:trimmed,params:new URL(buildShareURL()).searchParams.toString(),savedAt:new Date().toISOString()};
+    if(duplicate>=0){if(!window.confirm('A saved search with that name already exists. Replace it?'))return;items[duplicate]=entry}else items.push(entry);
+    if(writeSavedSearches(items)){renderSavedSearches();updateStatus('Saved search: '+trimmed)}
+  });
+  const list=document.createElement('button');list.type='button';list.id='toggleSavedSearches';list.className='textbtn';list.textContent='Saved Searches';list.addEventListener('click',()=>{const panel=$('savedSearchPanel');panel.hidden=!panel.hidden;if(!panel.hidden)renderSavedSearches()});
+  const exportButton=$('exportCSV');
+  if(exportButton){bar.insertBefore(save,exportButton);bar.insertBefore(list,exportButton)}else{bar.append(save,list)}
+  const panel=document.createElement('section');panel.id='savedSearchPanel';panel.hidden=true;panel.className='saved-search-panel';
+  panel.innerHTML=`<div class="saved-search-heading"><strong>My Saved Searches</strong><span class="saved-search-tools"><button type="button" id="exportSavedSearches" class="textbtn">Export</button><button type="button" id="importSavedSearches" class="textbtn">Import</button><button type="button" id="closeSavedSearches" class="textbtn" aria-label="Close saved searches">Close</button></span></div><div id="savedSearchList"></div><input type="file" id="savedSearchFile" accept="application/json,.json" hidden>`;
+  bar.insertAdjacentElement('afterend',panel);
+  $('closeSavedSearches').addEventListener('click',()=>panel.hidden=true);
+  $('exportSavedSearches').addEventListener('click',exportSavedSearches);
+  $('importSavedSearches').addEventListener('click',()=>$('savedSearchFile').click());
+  $('savedSearchFile').addEventListener('change',importSavedSearches);
+  $('savedSearchList').addEventListener('click',e=>{
+    const load=e.target.closest('[data-load-search]');const del=e.target.closest('[data-delete-search]');
+    if(load){const item=getSavedSearches()[Number(load.dataset.loadSearch)];if(!item)return;applySearchParams(new URLSearchParams(item.params));search();updateStatus('Loaded saved search: '+item.name);panel.hidden=true}
+    if(del){const index=Number(del.dataset.deleteSearch);const items=getSavedSearches();if(!items[index])return;if(!window.confirm('Delete saved search “'+items[index].name+'”?'))return;items.splice(index,1);if(writeSavedSearches(items))renderSavedSearches()}
+  });
+  addSavedSearchStyles();renderSavedSearches();
+}
+function renderSavedSearches(){
+  if(!$('savedSearchList'))return;const items=getSavedSearches();
+  $('toggleSavedSearches').textContent=`Saved Searches (${items.length})`;
+  if(!items.length){$('savedSearchList').innerHTML='<p class="saved-search-empty">No saved searches yet. Run a search and choose Save Search.</p>';return}
+  $('savedSearchList').innerHTML=items.map((item,index)=>`<div class="saved-search-item"><div class="saved-search-name">${esc(item.name)}</div><div class="saved-search-actions"><button type="button" class="textbtn" data-load-search="${index}">Load</button><button type="button" class="textbtn" data-delete-search="${index}">Delete</button></div></div>`).join('');
+}
+function exportSavedSearches(){
+  const data=JSON.stringify({format:'mtg-card-explorer-saved-searches',version:1,searches:getSavedSearches()},null,2);
+  const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='mtg-card-explorer-saved-searches.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function importSavedSearches(event){
+  const file=event.target.files?.[0];if(!file)return;
+  try{const parsed=JSON.parse(await file.text());const incoming=Array.isArray(parsed)?parsed:parsed.searches;if(!Array.isArray(incoming))throw new Error('This file does not contain a saved-search list.');
+    const valid=incoming.filter(x=>x&&typeof x.name==='string'&&typeof x.params==='string').map(x=>({name:x.name.trim(),params:x.params,savedAt:x.savedAt||new Date().toISOString()})).filter(x=>x.name);
+    const merged=getSavedSearches();for(const item of valid){const i=merged.findIndex(x=>x.name.toLocaleLowerCase()===item.name.toLocaleLowerCase());if(i>=0)merged[i]=item;else merged.push(item)}
+    if(writeSavedSearches(merged)){renderSavedSearches();updateStatus(`Imported ${valid.length} saved search${valid.length===1?'':'es'}. Existing names were updated.`)}
+  }catch(error){updateStatus('Could not import saved searches: '+error.message)}
+  event.target.value='';
+}
+function addSavedSearchStyles(){
+  if($('savedSearchStyle'))return;const style=document.createElement('style');style.id='savedSearchStyle';style.textContent=`
+    .saved-search-panel{margin:10px 0 16px;padding:14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035)}
+    .saved-search-panel[hidden]{display:none}.saved-search-heading,.saved-search-item{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .saved-search-heading{margin-bottom:10px}.saved-search-tools,.saved-search-actions{display:flex;gap:8px;align-items:center}.saved-search-item{padding:10px 0;border-top:1px solid var(--line)}
+    .saved-search-name{font-weight:600;overflow-wrap:anywhere}.saved-search-empty{color:var(--muted);font-size:13px;margin:8px 0}
+  `;document.head.appendChild(style);
 }
 
 function setupExportButton(){
