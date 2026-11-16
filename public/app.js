@@ -2,15 +2,140 @@ const $=id=>document.getElementById(id);
 let scryfallCards=null,allCards=[],filtered=[],visible=0;const PAGE_SIZE=60;let observer;let loadingScryfall=null;
 function clean(v){return String(v??'').trim()}
 function cardNameKey(v){return clean(v).normalize('NFKC').toLocaleLowerCase().replace(/\s+/g,' ')}
-function normCard(c,source='scryfall'){const name=clean(c.name??c['Card Name']??c.Name);return {name,type:clean(c.type??c.type_line??c['Card Type']??c.Type),set:clean(c.set_name??c.set??c['Set Name']??c.Set),setCode:clean(c.set_code??c.setCode??(source==='scryfall'?c.set:'')),collector:clean(c.collector_number??c.collector??''),color:Array.isArray(c.colors)?c.colors.join('')||'Colorless':clean(c.color??c['Casting Color']??c.Color),text:clean(c.oracle_text??c.text??c['Card Text']??c.Text),flavor:clean(c.flavor_text??c.flavor??c['Flavor Text']??c.Flavor),value:clean(c.value??c['Current Value']??c.Value),image:clean(c.image_url??c.image??c['Image URL']??c.ImageURL),rarity:clean(c.rarity),artist:clean(c.artist??c.Artist??''),manaCost:clean(c.mana_cost??c.manaCost),id:clean(c.id??c.scryfall_id),source};}
+function normCard(c,source='scryfall'){const name=clean(c.name??c['Card Name']??c.Name);return {name,type:clean(c.type??c.type_line??c['Card Type']??c.Type),set:clean(c.set_name??c.set??c['Set Name']??c.Set),setCode:clean(c.set_code??c.setCode??(source==='scryfall'?c.set:'')),collector:clean(c.collector_number??c.collector??''),color:Array.isArray(c.colors)?c.colors.join('')||'Colorless':clean(c.color??c['Casting Color']??c.Color),text:clean(c.oracle_text??c.text??c['Card Text']??c.Text),flavor:clean(c.flavor_text??c.flavor??c['Flavor Text']??c.Flavor),value:clean(c.value??c['Current Value']??c.Value),image:clean(c.image_url??c.image??c['Image URL']??c.ImageURL),rarity:clean(c.rarity),artist:clean(c.artist??c.Artist??''),manaValue:Number(c.cmc??c.mana_value??0),colorIdentity:Array.isArray(c.color_identity)?c.color_identity:[],id:clean(c.id??c.scryfall_id),source};}
 function parseCSV(text){let rows=[],row=[],field='',quoted=false;for(let i=0;i<text.length;i++){const ch=text[i];if(quoted){if(ch==='"'&&text[i+1]==='"'){field+='"';i++}else if(ch==='"')quoted=false;else field+=ch}else{if(ch==='"')quoted=true;else if(ch===','){row.push(field);field=''}else if(ch==='\n'){row.push(field);rows.push(row);row=[];field=''}else if(ch!=='\r')field+=ch}}if(field.length||row.length){row.push(field);rows.push(row)}if(!rows.length)return[];const headers=rows.shift().map(x=>x.trim().replace(/^\uFEFF/,''));return rows.filter(r=>r.some(v=>v.trim())).map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??''])))}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function options(id,values,label){const el=$(id),old=el.value;el.innerHTML=`<option value="">${label}</option>`+values.filter(Boolean).sort((a,b)=>a.localeCompare(b)).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');if(values.includes(old))el.value=old}
-function initializeFilters(){options('setFilter',[...new Set(allCards.map(c=>c.set))],'All sets');options('colorFilter',[...new Set(allCards.map(c=>c.color))],'All colors');options('artistFilter',[...new Set(allCards.map(c=>c.artist))],'All artists')}
+function initializeFilters(){options('setFilter',[...new Set(allCards.map(c=>c.set))],'All sets');options('colorFilter',[...new Set(allCards.map(c=>c.color))],'All colors');options('artistFilter',[...new Set(allCards.map(c=>c.artist))],'All artists');setupAdvancedFilters()}
+
+
+(function addAdvancedSearchStyles(){
+  if(document.getElementById('advancedSearchStyle'))return;
+  const style=document.createElement('style');
+  style.id='advancedSearchStyle';
+  style.textContent=`
+    .advanced-panel{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);overflow:hidden}
+    .advanced-panel summary{cursor:pointer;list-style:none;padding:12px 14px;font-weight:650;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .advanced-panel summary::-webkit-details-marker{display:none}
+    .advanced-panel summary:after{content:"+";margin-left:auto;font-size:20px;color:var(--gold)}
+    .advanced-panel[open] summary:after{content:"−"}
+    .advanced-hint{font-size:12px;font-weight:400;color:var(--muted)}
+    .advanced-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;padding:0 14px 14px;align-items:end}
+    .advanced-body>label,.advanced-body fieldset{min-width:0}
+    .advanced-body>label{display:flex;flex-direction:column;gap:6px}
+    .advanced-body select,.advanced-body input[type=number]{width:100%;min-width:0}
+    .advanced-body fieldset{border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin:0}
+    .advanced-body legend{font-size:12px;color:var(--muted);padding:0 4px}
+    .mana-range{display:flex;gap:8px}
+    .mana-range label{flex:1;font-size:12px;color:var(--muted)}
+    .identity-filter{grid-column:span 2}
+    .identity-options{display:flex;gap:10px;flex-wrap:wrap}
+    .identity-options label,.legendary-filter{display:flex;align-items:center;gap:5px;font-size:13px}
+    .legendary-filter{align-self:center;flex-direction:row!important;padding:8px 0}
+    @media(max-width:520px){.identity-filter{grid-column:1/-1}.advanced-panel summary{align-items:flex-start}}
+  `;
+  document.head.appendChild(style);
+})();
+
+function setupAdvancedFilters(){
+  if($('advancedFilters'))return;
+  const filters=document.querySelector('.filters');
+  if(!filters)return;
+  const panel=document.createElement('details');
+  panel.id='advancedFilters';
+  panel.className='advanced-panel';
+  panel.innerHTML=`
+    <summary>Advanced search <span class="advanced-hint">Type, rarity, mana value, color identity</span></summary>
+    <div class="advanced-body">
+      <label>Card type
+        <select id="typeAdvanced">
+          <option value="">Any card type</option>
+          <option value="Creature">Creature</option>
+          <option value="Instant">Instant</option>
+          <option value="Sorcery">Sorcery</option>
+          <option value="Artifact">Artifact</option>
+          <option value="Enchantment">Enchantment</option>
+          <option value="Planeswalker">Planeswalker</option>
+          <option value="Land">Land</option>
+          <option value="Battle">Battle</option>
+          <option value="Kindred">Kindred</option>
+        </select>
+      </label>
+      <label>Rarity
+        <select id="rarityAdvanced">
+          <option value="">Any rarity</option>
+          <option value="common">Common</option>
+          <option value="uncommon">Uncommon</option>
+          <option value="rare">Rare</option>
+          <option value="mythic">Mythic</option>
+          <option value="special">Special</option>
+          <option value="bonus">Bonus</option>
+        </select>
+      </label>
+      <fieldset class="mana-range">
+        <legend>Mana value</legend>
+        <label>Min <input id="manaMin" type="number" min="0" max="30" step="1" inputmode="numeric" placeholder="0"></label>
+        <label>Max <input id="manaMax" type="number" min="0" max="30" step="1" inputmode="numeric" placeholder="Any"></label>
+      </fieldset>
+      <fieldset class="identity-filter">
+        <legend>Color identity must include</legend>
+        <div class="identity-options">
+          <label><input type="checkbox" value="W" class="identity-color"> White</label>
+          <label><input type="checkbox" value="U" class="identity-color"> Blue</label>
+          <label><input type="checkbox" value="B" class="identity-color"> Black</label>
+          <label><input type="checkbox" value="R" class="identity-color"> Red</label>
+          <label><input type="checkbox" value="G" class="identity-color"> Green</label>
+        </div>
+      </fieldset>
+      <label class="legendary-filter"><input id="legendaryAdvanced" type="checkbox"> Legendary cards only</label>
+    </div>`;
+  filters.insertAdjacentElement('afterend',panel);
+  panel.querySelectorAll('select,input').forEach(el=>el.addEventListener('input',search));
+  panel.querySelectorAll('select,input').forEach(el=>el.addEventListener('change',search));
+}
+function resetAdvancedFilters(){
+  if(!$('advancedFilters'))return;
+  $('typeAdvanced').value='';
+  $('rarityAdvanced').value='';
+  $('manaMin').value='';
+  $('manaMax').value='';
+  $('legendaryAdvanced').checked=false;
+  document.querySelectorAll('.identity-color').forEach(el=>el.checked=false);
+}
+
 function sourceCards(){return scryfallCards||[]}
 function updateStatus(message){$('catalogStatus').textContent=message}
 function search(){if(!scryfallCards){loadScryfall().then(()=>{allCards=sourceCards();initializeFilters();runSearch()}).catch(e=>{updateStatus('Could not load the Scryfall catalog: '+e.message+'');$('count').textContent='Scryfall catalog unavailable.';runSearch()});return}runSearch()}
-function runSearch(){allCards=sourceCards();const q=$('search').value.trim().toLocaleLowerCase();const scope=$('scope').value,set=$('setFilter').value,color=$('colorFilter').value,artist=$('artistFilter').value,sort=$('sort').value;filtered=allCards.filter(c=>{if(set&&c.set!==set)return false;if(color&&c.color!==color)return false;if(artist&&c.artist!==artist)return false;if(!q)return true;let values=scope==='name'?[c.name]:scope==='text'?[c.text]:scope==='flavor'?[c.flavor]:scope==='type'?[c.type]:scope==='artist'?[c.artist]:[c.name,c.artist,c.type,c.text,c.flavor,c.set,c.setCode,c.collector,c.color,c.rarity];return values.some(v=>v.toLocaleLowerCase().includes(q))});filtered.sort((a,b)=>sort==='name-desc'?b.name.localeCompare(a.name):sort==='set'?a.set.localeCompare(b.set)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));visible=0;$('grid').innerHTML='';$('empty').hidden=filtered.length>0;$('count').textContent=`${filtered.length.toLocaleString()} card${filtered.length===1?'':'s'} found`;setupExportButton();$('exportCSV').disabled=filtered.length===0;const label='Scryfall catalog';$('catalogLabel').textContent=`${label} · ${allCards.length.toLocaleString()} loaded`;renderMore()}
+function runSearch(){
+  allCards=sourceCards();
+  const q=$('search').value.trim().toLocaleLowerCase();
+  const scope=$('scope').value,set=$('setFilter').value,color=$('colorFilter').value,artist=$('artistFilter').value,sort=$('sort').value;
+  const type=$('typeAdvanced')?.value||'',rarity=$('rarityAdvanced')?.value||'';
+  const minRaw=$('manaMin')?.value??'',maxRaw=$('manaMax')?.value??'';
+  const minMana=minRaw===''?null:Number(minRaw),maxMana=maxRaw===''?null:Number(maxRaw);
+  const identity=[...document.querySelectorAll('.identity-color:checked')].map(el=>el.value);
+  const legendary=$('legendaryAdvanced')?.checked||false;
+  filtered=allCards.filter(c=>{
+    if(set&&c.set!==set)return false;
+    if(color&&c.color!==color)return false;
+    if(artist&&c.artist!==artist)return false;
+    if(type&&!c.type.toLocaleLowerCase().includes(type.toLocaleLowerCase()))return false;
+    if(rarity&&c.rarity!==rarity)return false;
+    if(minMana!==null&&c.manaValue<minMana)return false;
+    if(maxMana!==null&&c.manaValue>maxMana)return false;
+    if(identity.length&&!identity.every(symbol=>c.colorIdentity.includes(symbol)))return false;
+    if(legendary&&!c.type.toLocaleLowerCase().includes('legendary'))return false;
+    if(!q)return true;
+    let values=scope==='name'?[c.name]:scope==='text'?[c.text]:scope==='flavor'?[c.flavor]:scope==='type'?[c.type]:scope==='artist'?[c.artist]:[c.name,c.artist,c.type,c.text,c.flavor,c.set,c.setCode,c.collector,c.color,c.rarity];
+    return values.some(v=>v.toLocaleLowerCase().includes(q));
+  });
+  filtered.sort((a,b)=>sort==='name-desc'?b.name.localeCompare(a.name):sort==='set'?a.set.localeCompare(b.set)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
+  visible=0;$('grid').innerHTML='';$('empty').hidden=filtered.length>0;
+  $('count').textContent=`${filtered.length.toLocaleString()} card${filtered.length===1?'':'s'} found`;
+  setupExportButton();$('exportCSV').disabled=filtered.length===0;
+  const label='Scryfall catalog';$('catalogLabel').textContent=`${label} · ${allCards.length.toLocaleString()} loaded`;
+  renderMore();
+}
 
 function csvCell(value){
   const text=String(value??'');
@@ -20,17 +145,17 @@ function exportCSV(){
   if(!filtered.length)return;
   // ManaBox's own collection CSV uses these field names. Scryfall ID is
   // essential for identifying the exact printing; each printing is one row.
-  const rows=[['Name','Scryfall ID','Set code','Set name','Collector number','Quantity']];
+  const rows=[['Card name','Set code','Set name','Collector number','Quantity','Foil','Scryfall ID']];
   let skipped=0;
   for(const c of filtered){
     if(!c.id||!c.name){skipped++;continue}
-    rows.push([c.name,c.id,c.setCode,c.set,c.collector,1]);
+    rows.push([c.name,c.setCode,c.set,c.collector,1,'false',c.id]);
   }
   if(rows.length===1){
     updateStatus('No exportable cards were found (Scryfall IDs are missing).');
     return;
   }
-  const csv='\uFEFF'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n')+'\r\n';
+  const csv=rows.map(row=>row.map(csvCell).join(',')).join('\r\n')+'\r\n';
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -108,7 +233,7 @@ async function loadScryfall(){
   })().finally(()=>{loadingScryfall=null});
   return loadingScryfall;
 }
-['search','scope','setFilter','colorFilter','artistFilter','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{search()}));$('clear').addEventListener('click',()=>{$('search').value='';search();$('search').focus()});$('reset').addEventListener('click',()=>{$('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('sort').value='name';search()});$('grid').addEventListener('click',e=>{const card=e.target.closest('.card');if(card)showDetail(Number(card.dataset.index))});$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();showDetail(Number(e.target.dataset.index))}});$('modal').addEventListener('click',e=>{if(e.target.dataset.close)closeDetail()});document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){closeDetail();return}if(e.key==='ArrowLeft'){e.preventDefault();navigateDetail(-1);return}if(e.key==='ArrowRight'){e.preventDefault();navigateDetail(1)}});$('prevCard').addEventListener('click',()=>navigateDetail(-1));$('nextCard').addEventListener('click',()=>navigateDetail(1));$('viewMode').addEventListener('click',()=>{const detail=document.querySelector('.detail');setMobileDetailMode(!detail.classList.contains('image-only'))});if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))renderMore()},{rootMargin:'800px'});observer.observe($('sentinel'))}else window.addEventListener('scroll',()=>{if(window.innerHeight+window.scrollY>=document.body.offsetHeight-700)renderMore()});
+['search','scope','setFilter','colorFilter','artistFilter','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{search()}));$('clear').addEventListener('click',()=>{$('search').value='';search();$('search').focus()});$('reset').addEventListener('click',()=>{$('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('sort').value='name';resetAdvancedFilters();search()});$('grid').addEventListener('click',e=>{const card=e.target.closest('.card');if(card)showDetail(Number(card.dataset.index))});$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();showDetail(Number(e.target.dataset.index))}});$('modal').addEventListener('click',e=>{if(e.target.dataset.close)closeDetail()});document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){closeDetail();return}if(e.key==='ArrowLeft'){e.preventDefault();navigateDetail(-1);return}if(e.key==='ArrowRight'){e.preventDefault();navigateDetail(1)}});$('prevCard').addEventListener('click',()=>navigateDetail(-1));$('nextCard').addEventListener('click',()=>navigateDetail(1));$('viewMode').addEventListener('click',()=>{const detail=document.querySelector('.detail');setMobileDetailMode(!detail.classList.contains('image-only'))});if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))renderMore()},{rootMargin:'800px'});observer.observe($('sentinel'))}else window.addEventListener('scroll',()=>{if(window.innerHeight+window.scrollY>=document.body.offsetHeight-700)renderMore()});
 (function addExportButtonStyle(){
   if(document.getElementById('exportCSVStyle'))return;
   const style=document.createElement('style');
@@ -117,4 +242,4 @@ async function loadScryfall(){
   document.head.appendChild(style);
 })();
 
-loadBundled();
+setupAdvancedFilters();loadBundled();
