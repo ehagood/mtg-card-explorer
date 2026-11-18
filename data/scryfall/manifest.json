@@ -1,40 +1,40 @@
 {
   "status": "ready",
   "source": "Scryfall all_cards bulk data",
-  "updated_at": "2026-11-17T11:58:43Z",
-  "scryfall_updated_at": "2026-11-17T10:22:42.155+00:00",
-  "card_count": 117479,
-  "compressed_bytes": 12799858,
+  "updated_at": "2026-11-18T11:50:15Z",
+  "scryfall_updated_at": "2026-11-18T10:23:04.211+00:00",
+  "card_count": 117529,
+  "compressed_bytes": 12811841,
   "shards": [
     {
       "file": "cards-A_C-001.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 551282
+      "bytes": 551420
     },
     {
       "file": "cards-A_C-002.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 551646
+      "bytes": 552004
     },
     {
       "file": "cards-A_C-003.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 560081
+      "bytes": 560099
     },
     {
       "file": "cards-A_C-004.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 541389
+      "bytes": 541419
     },
     {
       "file": "cards-A_C-005.json.gz",
       "bucket": "A-C",
-      "count": 1209,
-      "bytes": 135120
+      "count": 1214,
+      "bytes": 135778
     },
     {
       "file": "cards-D_F-001.json.gz",
@@ -46,133 +46,133 @@
       "file": "cards-D_F-002.json.gz",
       "bucket": "D-F",
       "count": 5000,
-      "bytes": 550374
+      "bytes": 550379
     },
     {
       "file": "cards-D_F-003.json.gz",
       "bucket": "D-F",
       "count": 5000,
-      "bytes": 523146
+      "bytes": 523435
     },
     {
       "file": "cards-D_F-004.json.gz",
       "bucket": "D-F",
-      "count": 1642,
-      "bytes": 160791
+      "count": 1643,
+      "bytes": 160826
     },
     {
       "file": "cards-G_I-001.json.gz",
       "bucket": "G-I",
       "count": 5000,
-      "bytes": 548007
+      "bytes": 548213
     },
     {
       "file": "cards-G_I-002.json.gz",
       "bucket": "G-I",
       "count": 5000,
-      "bytes": 569273
+      "bytes": 569811
     },
     {
       "file": "cards-G_I-003.json.gz",
       "bucket": "G-I",
-      "count": 3432,
-      "bytes": 344263
+      "count": 3436,
+      "bytes": 344677
     },
     {
       "file": "cards-J_L-001.json.gz",
       "bucket": "J-L",
       "count": 5000,
-      "bytes": 560347
+      "bytes": 560386
     },
     {
       "file": "cards-J_L-002.json.gz",
       "bucket": "J-L",
-      "count": 2885,
-      "bytes": 311831
+      "count": 2887,
+      "bytes": 312247
     },
     {
       "file": "cards-M_O-001.json.gz",
       "bucket": "M-O",
       "count": 5000,
-      "bytes": 566470
+      "bytes": 566476
     },
     {
       "file": "cards-M_O-002.json.gz",
       "bucket": "M-O",
       "count": 5000,
-      "bytes": 501775
+      "bytes": 502302
     },
     {
       "file": "cards-M_O-003.json.gz",
       "bucket": "M-O",
-      "count": 2271,
-      "bytes": 247735
+      "count": 2274,
+      "bytes": 247902
     },
     {
       "file": "cards-P_R-001.json.gz",
       "bucket": "P-R",
       "count": 5000,
-      "bytes": 508183
+      "bytes": 508195
     },
     {
       "file": "cards-P_R-002.json.gz",
       "bucket": "P-R",
       "count": 5000,
-      "bytes": 561597
+      "bytes": 561767
     },
     {
       "file": "cards-P_R-003.json.gz",
       "bucket": "P-R",
-      "count": 2114,
-      "bytes": 246110
+      "count": 2119,
+      "bytes": 247098
     },
     {
       "file": "cards-S_U-001.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 548383
+      "bytes": 548592
     },
     {
       "file": "cards-S_U-002.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 554480
+      "bytes": 554695
     },
     {
       "file": "cards-S_U-003.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 515379
+      "bytes": 515612
     },
     {
       "file": "cards-S_U-004.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 544282
+      "bytes": 546114
     },
     {
       "file": "cards-S_U-005.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 559189
+      "bytes": 559328
     },
     {
       "file": "cards-S_U-006.json.gz",
       "bucket": "S-U",
-      "count": 756,
-      "bytes": 82629
+      "count": 782,
+      "bytes": 85947
     },
     {
       "file": "cards-V_Z-001.json.gz",
       "bucket": "V-Z",
       "count": 5000,
-      "bytes": 562097
+      "bytes": 562102
     },
     {
       "file": "cards-V_Z-002.json.gz",
       "bucket": "V-Z",
-      "count": 3111,
-      "bytes": 340383
+      "count": 3115,
+      "bytes": 341401
     },
     {
       "file": "cards-0_9-001.json.gz",
