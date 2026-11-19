@@ -156,21 +156,44 @@ async function startCollectionComboScan(force=false){if(comboScanRunning||!colle
 async function importManaBoxCSV(event){const file=event.target.files?.[0];if(!file)return;try{const text=await file.text();const rows=parseCSV(text);if(!rows.length)throw new Error('The CSV appears to be empty.');const first=rows[0];const headers=Object.keys(first);const find=(row,names)=>{for(const name of names){const key=headers.find(h=>h.trim().toLowerCase()===name.toLowerCase());if(key&&clean(row[key]))return clean(row[key])}return ''};const hasName=headers.some(h=>['card name','name'].includes(h.trim().toLowerCase()));const hasId=headers.some(h=>['scryfall id','scryfall_id'].includes(h.trim().toLowerCase()));const hasPrinting=headers.some(h=>['set code','set_code'].includes(h.trim().toLowerCase()))&&headers.some(h=>['collector number','collector_number'].includes(h.trim().toLowerCase()));if(!hasName&&!hasId&&!hasPrinting)throw new Error('I could not identify ManaBox columns. Please use the CSV export with Card name, Scryfall ID, Set code, Collector number, and Quantity.');const imported=[];let skipped=0;for(const row of rows){const name=find(row,['Card name','Name']),id=find(row,['Scryfall ID','Scryfall_ID']),setCode=find(row,['Set code','Set Code','set_code']),collector=find(row,['Collector number','Collector Number','collector_number']),quantity=Math.max(0,parseInt(find(row,['Quantity','Count'])||'1',10)||0),foil=find(row,['Foil']).toLowerCase()==='true';if(!name&&!id&&!setCode){skipped++;continue}if(!quantity){skipped++;continue}imported.push({id,name,setCode:setCode.toLowerCase(),setName:find(row,['Set name','Set Name']),collector,quantity,foil})}if(!imported.length)throw new Error('No usable card rows were found in this CSV.');if(collectionItems.length&&!confirm(`Import ${imported.length.toLocaleString()} ManaBox rows and replace the ${collectionItems.length.toLocaleString()} existing collection entries?`))return;collectionItems=imported;if(!saveCollection())return;comboScanRecord=null;renderCollectionPanel();runSearch();updateStatus(`Imported ${imported.length.toLocaleString()} ManaBox collection rows${skipped?`; skipped ${skipped}`:''}. Your collection stays in this browser.`);startCollectionComboScan(false)}catch(error){updateStatus('Could not import ManaBox CSV: '+error.message)}finally{event.target.value=''}}
 function exportCollectionBackup(){if(!collectionItems.length){updateStatus('There is no collection to export yet.');return}const data=JSON.stringify({format:'mtg-card-explorer-local-collection',version:1,collection:collectionItems},null,2);const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='mtg-card-explorer-collection-backup.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);updateStatus('Downloaded your local collection backup.')}
 function addCollectionStyles(){if($('collectionStyle'))return;const style=document.createElement('style');style.id='collectionStyle';style.textContent=`.collection-summary{font-size:13px;color:var(--muted);margin:8px 0}.collection-only-label{display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0}.collection-only-label input{accent-color:var(--accent)}.collection-owned{display:inline-flex;align-items:center;gap:4px;margin-top:7px;padding:3px 7px;border-radius:999px;background:rgba(46,160,110,.16);color:#65d6a0;font-size:11px;font-weight:700}.collection-qty{font-weight:700}.precon-card-meta{font-size:10px;color:var(--gold);margin-top:5px}.resultsbar #myCollectionButton{white-space:nowrap}.collection-combo-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}.collection-combo-tools .collection-summary{margin:0}#collectionComboResults{margin-top:12px}.collection-combo-tools button{white-space:nowrap}#collectionComboStatus{line-height:1.45}.collection-combo-summary{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:12px 0;font-size:12px;color:var(--muted)}.collection-combo-cards{display:grid;gap:8px}.collection-combo-item{border:1px solid var(--line);border-radius:11px;background:#202431;overflow:hidden}.collection-combo-item summary{cursor:pointer;list-style:none;padding:12px 14px}.collection-combo-item summary::-webkit-details-marker{display:none}.collection-combo-item summary:after{content:'＋';float:right;color:var(--gold);font-weight:800}.collection-combo-item[open] summary:after{content:'−'}.collection-combo-item-title{display:block;font-weight:750;font-size:13px;padding-right:22px}.collection-combo-item-meta{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--muted)}.collection-combo-item-cards{display:block;margin-top:6px;font-size:11px;line-height:1.5;color:var(--muted)}.collection-combo-detail{padding:0 9px 9px}.collection-combo-detail .ce-combo{padding:12px}.collection-combo-pagination{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 0;font-size:12px;color:var(--muted)}.ce-combo-filters{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 15px}.ce-combo-filter{border:1px solid var(--line);border-radius:20px;padding:7px 11px;background:#252b38;color:var(--muted);font:inherit;font-size:12px;cursor:pointer}.ce-combo-filter.active{border-color:#a58b58;background:#3a3428;color:#f1d49a}.ce-combo-piece-labels{display:flex;flex-direction:column;gap:4px;min-width:0}.ce-combo-piece-status{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.ce-combo-piece-status.owned{color:#65d6a0}.ce-combo-piece-status.missing{color:#e5b96b}.collection-combo-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.collection-combo-missing{font-size:10px;color:#e5b96b;background:rgba(229,185,107,.12);padding:3px 7px;border-radius:20px}.collection-combo-missing-list{display:block;margin-top:5px;color:#e5b96b;font-size:11px}.collection-top-cards{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin:12px 0;background:#202431}.collection-top-cards h3{font-size:14px;margin:0 0 4px}.collection-top-cards p{font-size:11px;color:var(--muted);margin:0 0 8px}.collection-top-cards ol{margin:0;padding-left:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:5px 20px}.collection-top-cards li{font-size:12px;padding:2px 0}.collection-top-cards li strong{float:right;color:var(--muted);font-size:11px}.collection-top-card-link{border:0;background:none;color:var(--text);padding:0;text-align:left;cursor:pointer;font:inherit}.collection-top-card-link:hover,.collection-top-card-link.selected{color:var(--gold);text-decoration:underline}.collection-top-cards{padding:0;overflow:hidden}.collection-top-cards>.collection-top-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;cursor:pointer;list-style:none}.collection-top-cards>.collection-top-heading::-webkit-details-marker{display:none}.collection-top-heading strong{display:block;font-size:14px}.collection-top-heading small{display:block;margin-top:4px;color:var(--muted);font-size:11px;font-weight:400}.collection-top-toggle{font-size:18px;color:var(--gold);transition:transform .15s}.collection-top-cards:not([open]) .collection-top-toggle{transform:rotate(-90deg)}.collection-top-cards>ol,.collection-top-cards>.ce-empty{margin:0 14px 12px}.collection-top-selected{border-top:1px solid var(--line);padding:12px 14px}.collection-top-selected-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:12px}.collection-top-selected .collection-combo-cards{margin-top:8px}`;document.head.appendChild(style)}
-function setHeroFeaturedCard(cards){
+let heroFeaturedCard=null,heroFeaturedClickTimer=null;
+function initHeroFeaturedInteractions(){
+  const figure=document.querySelector('.hero-art');
+  if(!figure||figure.dataset.interactive==='true')return;
+  figure.dataset.interactive='true';
+  figure.setAttribute('role','button');
+  figure.setAttribute('tabindex','0');
+  figure.setAttribute('aria-label','Open the featured card in Card Explorer. Double-click to feature another card.');
+  figure.title='Click to open in Card Explorer · Double-click for another card';
+  figure.addEventListener('click',()=>{
+    if(heroFeaturedClickTimer)clearTimeout(heroFeaturedClickTimer);
+    heroFeaturedClickTimer=setTimeout(()=>{heroFeaturedClickTimer=null;if(heroFeaturedCard)openCardExplorer(heroFeaturedCard)},260);
+  });
+  figure.addEventListener('dblclick',event=>{
+    event.preventDefault();
+    if(heroFeaturedClickTimer){clearTimeout(heroFeaturedClickTimer);heroFeaturedClickTimer=null}
+    if(Array.isArray(allCards)&&allCards.length)setHeroFeaturedCard(allCards,true);
+  });
+  figure.addEventListener('keydown',event=>{
+    if(event.key==='Enter'||event.key===' '){event.preventDefault();if(heroFeaturedCard)openCardExplorer(heroFeaturedCard)}
+  });
+}
+function setHeroFeaturedCard(cards,avoidCurrent=false){
   const image=$('heroFeaturedImage');
   if(!image||!Array.isArray(cards))return;
-  let featured=null,count=0;
-  for(const card of cards){
-    if(!card.image)continue;
-    count++;
-    if(Math.random()*count<1)featured=card;
-  }
-  if(!featured)return;
+  const eligible=cards.filter(card=>card.image&&(!avoidCurrent||!heroFeaturedCard||card.id!==heroFeaturedCard.id));
+  const pool=eligible.length?eligible:cards.filter(card=>card.image);
+  if(!pool.length)return;
+  const featured=pool[Math.floor(Math.random()*pool.length)];
+  heroFeaturedCard=featured;
   image.src=featured.image;
   image.alt=`${featured.name} — Magic: The Gathering card`;
   image.hidden=false;
   const caption=$('heroFeaturedCaption');
   if(caption)caption.textContent=featured.name+(featured.set?' · '+featured.set:'');
+  const figure=document.querySelector('.hero-art');
+  if(figure)figure.setAttribute('aria-label',`Featured card: ${featured.name}. Click to open in Card Explorer. Double-click to feature another card.`);
+  initHeroFeaturedInteractions();
 }
 
 function sourceCards(){return scryfallCards||[]}
