@@ -1,0 +1,12 @@
+{
+  "status": "ready",
+  "source": "MTGJSON-derived preconstructed deck index (kasper-cbx/mtg-search-index)",
+  "dataset": "kasper-cbx/mtg-search-index",
+  "config": "precons",
+  "split": "train",
+  "updated_at": "2026-11-20T13:44:06Z",
+  "deck_count": 1886,
+  "data_file": "data/precons.json",
+  "sha256": "248bfd772b99235d13485c98e99735cace34addf0ad1a1b037bcd85e0d4530ae",
+  "notes": "Compact preconstructed deck records used by MTG Card Explorer. The upstream index is derived from MTGJSON AllDeckFiles; only records containing usable decklists are retained."
+}
