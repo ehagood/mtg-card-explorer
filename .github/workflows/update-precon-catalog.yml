@@ -1,0 +1,44 @@
+name: Update Preconstructed Deck Catalog
+
+on:
+  workflow_dispatch:
+  # MTGJSON publishes its daily build around 09:00 US Eastern; run later to allow the index to refresh.
+  schedule:
+    - cron: "30 17 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: precon-catalog-update
+  cancel-in-progress: false
+
+jobs:
+  update-precon-catalog:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Build compact precon catalog
+        run: python scripts/update_precon_catalog.py
+
+      - name: Commit updated catalog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/precons.json public/data/precons-manifest.json
+          if git diff --cached --quiet; then
+            echo "Precon catalog has no changes; nothing to commit."
+          else
+            git commit -m "Update preconstructed deck catalog"
+            git push
+          fi
