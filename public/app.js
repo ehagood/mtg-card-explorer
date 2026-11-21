@@ -36,6 +36,7 @@ function initializeFilters(){options('setFilter',[...new Set(allCards.map(c=>c.s
     .legendary-filter{align-self:center;flex-direction:row!important;padding:8px 0}
     .precon-filter{grid-column:1/-1}
     .precon-filter small{font-size:11px;color:var(--muted);font-weight:400}
+    .printing-stack{margin-top:9px;border-top:1px solid var(--line);padding-top:7px;font-size:11px}.printing-stack summary{cursor:pointer;color:var(--gold);font-weight:700;list-style:none}.printing-stack summary::-webkit-details-marker{display:none}.printing-stack-list{display:grid;gap:4px;margin-top:7px;max-height:220px;overflow:auto}.printing-choice{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;padding:6px 7px;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,.035);color:var(--text);font:inherit;cursor:pointer}.printing-choice:hover{border-color:var(--gold);background:rgba(200,170,100,.1)}
     @media(max-width:520px){.identity-filter{grid-column:1/-1}.advanced-panel summary{align-items:flex-start}}
   `;
   document.head.appendChild(style);
@@ -49,7 +50,7 @@ function setupAdvancedFilters(){
   panel.id='advancedFilters';
   panel.className='advanced-panel';
   panel.innerHTML=`
-    <summary>Advanced search <span class="advanced-hint">Type, rarity, mana value, color identity, precons</span></summary>
+    <summary>Advanced search <span class="advanced-hint">Type, rarity, mana value, color identity, format legality, printings, precons</span></summary>
     <div class="advanced-body">
       <label>Card type
         <select id="typeAdvanced">
@@ -92,6 +93,26 @@ function setupAdvancedFilters(){
         </div>
       </fieldset>
       <label class="legendary-filter"><input id="legendaryAdvanced" type="checkbox"> Legendary cards only</label>
+      <label>Format legality
+        <select id="formatAdvanced">
+          <option value="">Any format</option>
+          <option value="commander">Commander</option><option value="standard">Standard</option>
+          <option value="modern">Modern</option><option value="pioneer">Pioneer</option>
+          <option value="legacy">Legacy</option><option value="vintage">Vintage</option>
+          <option value="pauper">Pauper</option><option value="brawl">Brawl</option>
+          <option value="historic">Historic</option><option value="explorer">Explorer</option>
+          <option value="oathbreaker">Oathbreaker</option><option value="duel">Duel Commander</option>
+          <option value="penny">Penny Dreadful</option><option value="paupercommander">Pauper Commander</option>
+        </select>
+      </label>
+      <label>Legality status
+        <select id="legalityStatusAdvanced">
+          <option value="legal">Legal</option><option value="not_legal">Not legal</option>
+          <option value="banned">Banned</option><option value="restricted">Restricted</option>
+          <option value="any">Any status</option>
+        </select>
+      </label>
+      <label class="legendary-filter"><input id="groupPrintingsAdvanced" type="checkbox"> Group identical printings</label>
       <label class="precon-filter">Precons <select id="preconAdvanced"><option value="">All cards (no precon selected)</option></select><small>Select a preconstructed deck to search its card list. Collection ownership and the other filters still apply.</small></label>
     </div>`;
   filters.insertAdjacentElement('afterend',panel);
@@ -109,6 +130,9 @@ function resetAdvancedFilters(){
   $('manaMin').value='';
   $('manaMax').value='';
   $('legendaryAdvanced').checked=false;
+  if($('formatAdvanced'))$('formatAdvanced').value='';
+  if($('legalityStatusAdvanced'))$('legalityStatusAdvanced').value='legal';
+  if($('groupPrintingsAdvanced'))$('groupPrintingsAdvanced').checked=false;
   if($('preconAdvanced'))$('preconAdvanced').value='';
   document.querySelectorAll('.identity-color').forEach(el=>el.checked=false);
 }
@@ -210,6 +234,7 @@ function runSearch(){
   const minMana=minRaw===''?null:Number(minRaw),maxMana=maxRaw===''?null:Number(maxRaw);
   const identity=[...document.querySelectorAll('.identity-color:checked')].map(el=>el.value);
   const legendary=$('legendaryAdvanced')?.checked||false;
+  const format=$('formatAdvanced')?.value||'',legalityStatus=$('legalityStatusAdvanced')?.value||'legal';
   const onlyCollection=$('collectionOnly')?.checked||false;
   filtered=searchCards.filter(c=>{
     if(onlyCollection&&!(activePrecon?collectionNameQuantity(c):collectionQuantity(c)))return false;
@@ -222,13 +247,16 @@ function runSearch(){
     if(maxMana!==null&&c.manaValue>maxMana)return false;
     if(identity.length&&!identity.every(symbol=>c.colorIdentity.includes(symbol)))return false;
     if(legendary&&!c.type.toLocaleLowerCase().includes('legendary'))return false;
+    if(format&&legalityStatus!=='any'&&(c.legalities?.[format]||'not_legal')!==legalityStatus)return false;
     if(!q)return true;
     let values=scope==='name'?[c.name]:scope==='text'?[c.text]:scope==='flavor'?[c.flavor]:scope==='type'?[c.type]:scope==='artist'?[c.artist]:[c.name,c.artist,c.type,c.text,c.flavor,c.set,c.setCode,c.collector,c.color,c.rarity];
     return values.some(v=>v.toLocaleLowerCase().includes(q));
   });
   filtered.sort((a,b)=>sort==='name-desc'?b.name.localeCompare(a.name):sort==='set'?a.set.localeCompare(b.set)||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
   visible=0;$('grid').innerHTML='';$('empty').hidden=filtered.length>0;
-  $('count').textContent=`${filtered.length.toLocaleString()} card${filtered.length===1?'':'s'} found`;
+  const grouped=$('groupPrintingsAdvanced')?.checked||false;
+  const displayCount=grouped?groupCards(filtered).length:filtered.length;
+  $('count').textContent=`${displayCount.toLocaleString()} ${grouped?'unique card':'card'}${displayCount===1?'':'s'} found${grouped?` · ${filtered.length.toLocaleString()} printings`:''}`;
   setupExportButton();$('exportCSV').disabled=filtered.length===0;setupShareButton();setupSavedSearchUI();setupCollectionUI();
   const label=activePrecon?`${activePrecon.category}-${activePrecon.name}`:'Scryfall catalog';$('catalogLabel').textContent=activePrecon?`${label} · ${searchCards.length.toLocaleString()} deck cards`:`${label} · ${allCards.length.toLocaleString()} loaded`;
   renderMore();
@@ -423,7 +451,9 @@ function setupExportButton(){
 }
 
 function cardHTML(c,index){const snippet=c.text||'',qty=c.preconName?collectionNameQuantity(c):collectionQuantity(c);const printing=[c.setCode?'('+c.setCode.toUpperCase()+')':'',c.collector].filter(Boolean).join(' ');return `<article class="card" tabindex="0" role="button" data-index="${index}" aria-label="View ${esc(c.name)}"><img loading="lazy" src="${esc(c.image)}" alt="${esc(c.name)}" onerror="this.style.visibility='hidden'"><div class="name">${esc(c.name||'Unnamed card')}</div><div class="sourcebadge">${'Scryfall'}</div><div class="set">${esc(c.set)}${c.color?' · '+esc(c.color):''}</div>${qty?`<div class="collection-owned">✓ Owned · ${qty}</div>`:''}${c.preconQty?`<div class="precon-card-meta">Precon quantity: ${c.preconQty} · ${esc(c.preconSection||'main')}</div>`:''}${printing?`<div class="printing">${esc(printing)}</div>`:''}${snippet?`<p class="snippet">${esc(snippet)}</p>`:''}${c.flavor?`<p class="flavorsnippet">${esc(c.flavor)}</p>`:''}</article>`}
-function renderMore(){const end=Math.min(visible+PAGE_SIZE,filtered.length);if(end<=visible)return;const frag=document.createDocumentFragment(),temp=document.createElement('div');temp.innerHTML=filtered.slice(visible,end).map((c,i)=>cardHTML(c,visible+i)).join('');while(temp.firstChild)frag.appendChild(temp.firstChild);$('grid').appendChild(frag);visible=end}
+function groupCards(cards){const groups=new Map();for(let i=0;i<cards.length;i++){const c=cards[i],key=c.oracleId||('name:'+cardNameKey(c.name));if(!groups.has(key))groups.set(key,[]);groups.get(key).push({card:c,index:i})}return [...groups.values()]}
+function groupedCardHTML(items,groupIndex){const first=items[0].card,qty=items.reduce((n,x)=>n+collectionQuantity(x.card),0),printingList=items.map(x=>`<button type="button" class="printing-choice" data-index="${x.index}"><span>${esc(x.card.set)} (${esc(x.card.setCode.toUpperCase())})</span><span>#${esc(x.card.collector)}</span></button>`).join('');return `<article class="card grouped-card" tabindex="0" role="button" data-index="${items[0].index}" aria-label="View ${esc(first.name)}"><img loading="lazy" src="${esc(first.image)}" alt="${esc(first.name)}" onerror="this.style.visibility='hidden'"><div class="name">${esc(first.name||'Unnamed card')}</div><div class="sourcebadge">${items.length.toLocaleString()} printings</div><div class="set">${esc(first.type)}${first.color?' · '+esc(first.color):''}</div>${qty?`<div class="collection-owned">✓ Owned · ${qty}</div>`:''}<details class="printing-stack"><summary>Show all ${items.length} printings</summary><div class="printing-stack-list">${printingList}</div></details></article>`}
+function renderMore(){const grouped=$('groupPrintingsAdvanced')?.checked||false;const groups=grouped?groupCards(filtered):null;const total=grouped?groups.length:filtered.length;const end=Math.min(visible+PAGE_SIZE,total);if(end<=visible)return;const frag=document.createDocumentFragment(),temp=document.createElement('div');temp.innerHTML=grouped?groups.slice(visible,end).map((items,i)=>groupedCardHTML(items,visible+i)).join(''):filtered.slice(visible,end).map((c,i)=>cardHTML(c,visible+i)).join('');while(temp.firstChild)frag.appendChild(temp.firstChild);$('grid').appendChild(frag);visible=end}
 let detailIndex=-1;
 function showDetail(index){const c=filtered[index];if(!c)return;const opening=$('modal').hidden;detailIndex=index;if(opening){setMobileDetailMode(false)}$('detailImg').src=c.image;$('detailImg').alt=c.name;$('detailName').textContent=c.name;$('detailSet').textContent=['SCRYFALL',c.set,c.setCode?'('+c.setCode.toUpperCase()+')':'',c.collector].filter(Boolean).join(' · ')||'SET UNKNOWN';$('detailType').textContent=c.type;$('detailText').textContent=c.text||'No rules text in this catalog.';$('flavorBlock').hidden=!c.flavor;$('detailFlavor').textContent=c.flavor;$('detailMeta').textContent=[c.color?'Color: '+c.color:'',c.manaCost?'Mana cost: '+c.manaCost:'',c.rarity?'Rarity: '+c.rarity:'',c.artist?'Artist: '+c.artist:'',c.value?'Catalog value: '+c.value:'',c.id?'Scryfall ID: '+c.id:'',collectionQuantity(c)?'In your collection: '+collectionQuantity(c):''].filter(Boolean).join(' · ');setupCardExplorerButton();$('modal').hidden=false;updateDetailNav();document.body.style.overflow='hidden'}
 function setupCardExplorerButton(){
@@ -636,7 +666,7 @@ async function loadScryfall(){
   })().finally(()=>{loadingScryfall=null});
   return loadingScryfall;
 }
-['search','scope','setFilter','colorFilter','artistFilter','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{search()}));$('clear').addEventListener('click',()=>{$('search').value='';search();$('search').focus()});$('reset').addEventListener('click',()=>{$('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('sort').value='name';resetAdvancedFilters();search()});$('grid').addEventListener('click',e=>{const card=e.target.closest('.card');if(card)showDetail(Number(card.dataset.index))});$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();showDetail(Number(e.target.dataset.index))}});$('modal').addEventListener('click',e=>{if(e.target.dataset.close)closeDetail()});document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){closeDetail();return}if(e.key==='ArrowLeft'){e.preventDefault();navigateDetail(-1);return}if(e.key==='ArrowRight'){e.preventDefault();navigateDetail(1)}});$('prevCard').addEventListener('click',()=>navigateDetail(-1));$('nextCard').addEventListener('click',()=>navigateDetail(1));$('viewMode').addEventListener('click',()=>{const detail=document.querySelector('.detail');setMobileDetailMode(!detail.classList.contains('image-only'))});if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))renderMore()},{rootMargin:'800px'});observer.observe($('sentinel'))}else window.addEventListener('scroll',()=>{if(window.innerHeight+window.scrollY>=document.body.offsetHeight-700)renderMore()});
+['search','scope','setFilter','colorFilter','artistFilter','sort'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',()=>{search()}));$('clear').addEventListener('click',()=>{$('search').value='';search();$('search').focus()});$('reset').addEventListener('click',()=>{$('search').value='';$('scope').value='all';$('setFilter').value='';$('colorFilter').value='';$('artistFilter').value='';$('sort').value='name';resetAdvancedFilters();search()});$('grid').addEventListener('click',e=>{const choice=e.target.closest('.printing-choice');if(choice){e.preventDefault();e.stopPropagation();showDetail(Number(choice.dataset.index));return}const card=e.target.closest('.card');if(card&&!e.target.closest('.printing-stack'))showDetail(Number(card.dataset.index))});$('grid').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('card')){e.preventDefault();showDetail(Number(e.target.dataset.index))}});$('modal').addEventListener('click',e=>{if(e.target.dataset.close)closeDetail()});document.addEventListener('keydown',e=>{if($('modal').hidden)return;if(e.key==='Escape'){closeDetail();return}if(e.key==='ArrowLeft'){e.preventDefault();navigateDetail(-1);return}if(e.key==='ArrowRight'){e.preventDefault();navigateDetail(1)}});$('prevCard').addEventListener('click',()=>navigateDetail(-1));$('nextCard').addEventListener('click',()=>navigateDetail(1));$('viewMode').addEventListener('click',()=>{const detail=document.querySelector('.detail');setMobileDetailMode(!detail.classList.contains('image-only'))});if('IntersectionObserver'in window){observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))renderMore()},{rootMargin:'800px'});observer.observe($('sentinel'))}else window.addEventListener('scroll',()=>{if(window.innerHeight+window.scrollY>=document.body.offsetHeight-700)renderMore()});
 
 (function addShareSearchStyle(){
   if(document.getElementById('shareSearchStyle'))return;
