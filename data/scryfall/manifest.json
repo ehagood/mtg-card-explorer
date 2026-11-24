@@ -1,10 +1,10 @@
 {
   "status": "ready",
   "source": "Scryfall all_cards bulk data",
-  "updated_at": "2026-11-23T12:57:07Z",
-  "scryfall_updated_at": "2026-11-23T10:22:49.275+00:00",
+  "updated_at": "2026-11-24T13:50:24Z",
+  "scryfall_updated_at": "2026-11-24T10:22:44.119+00:00",
   "card_count": 117615,
-  "compressed_bytes": 14180225,
+  "compressed_bytes": 14180262,
   "shards": [
     {
       "file": "cards-A_C-001.json.gz",
@@ -16,13 +16,13 @@
       "file": "cards-A_C-002.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 610601
+      "bytes": 610596
     },
     {
       "file": "cards-A_C-003.json.gz",
       "bucket": "A-C",
       "count": 5000,
-      "bytes": 619737
+      "bytes": 619748
     },
     {
       "file": "cards-A_C-004.json.gz",
@@ -82,7 +82,7 @@
       "file": "cards-J_L-001.json.gz",
       "bucket": "J-L",
       "count": 5000,
-      "bytes": 619215
+      "bytes": 619219
     },
     {
       "file": "cards-J_L-002.json.gz",
@@ -106,13 +106,13 @@
       "file": "cards-M_O-003.json.gz",
       "bucket": "M-O",
       "count": 2285,
-      "bytes": 274812
+      "bytes": 274813
     },
     {
       "file": "cards-P_R-001.json.gz",
       "bucket": "P-R",
       "count": 5000,
-      "bytes": 562312
+      "bytes": 562314
     },
     {
       "file": "cards-P_R-002.json.gz",
@@ -142,7 +142,7 @@
       "file": "cards-S_U-003.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 569671
+      "bytes": 569682
     },
     {
       "file": "cards-S_U-004.json.gz",
@@ -154,7 +154,7 @@
       "file": "cards-S_U-005.json.gz",
       "bucket": "S-U",
       "count": 5000,
-      "bytes": 618203
+      "bytes": 618210
     },
     {
       "file": "cards-S_U-006.json.gz",
@@ -172,7 +172,7 @@
       "file": "cards-V_Z-002.json.gz",
       "bucket": "V-Z",
       "count": 3120,
-      "bytes": 376835
+      "bytes": 376841
     },
     {
       "file": "cards-0_9-001.json.gz",
