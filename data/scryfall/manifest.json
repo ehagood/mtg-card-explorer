@@ -1,10 +1,10 @@
 {
   "status": "ready",
   "source": "Scryfall all_cards bulk data",
-  "updated_at": "2026-11-26T12:43:55Z",
-  "scryfall_updated_at": "2026-11-26T10:23:31.002+00:00",
+  "updated_at": "2026-11-27T12:33:16Z",
+  "scryfall_updated_at": "2026-11-27T10:22:23.574+00:00",
   "card_count": 117616,
-  "compressed_bytes": 14180374,
+  "compressed_bytes": 14180380,
   "shards": [
     {
       "file": "cards-A_C-001.json.gz",
@@ -94,13 +94,13 @@
       "file": "cards-M_O-001.json.gz",
       "bucket": "M-O",
       "count": 5000,
-      "bytes": 626544
+      "bytes": 626547
     },
     {
       "file": "cards-M_O-002.json.gz",
       "bucket": "M-O",
       "count": 5000,
-      "bytes": 555129
+      "bytes": 555132
     },
     {
       "file": "cards-M_O-003.json.gz",
